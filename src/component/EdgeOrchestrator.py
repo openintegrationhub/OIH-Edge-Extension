@@ -3,9 +3,9 @@ import threading
 import logging
 
 
-class Orchestrator(threading.Thread):
+class EdgeOrchestrator(threading.Thread):
     def __init__(self, config, buffer):
-        super().__init__(name="Orchestrator")
+        super().__init__(name="EdgeOrchestrator")
         self.flow = None
         self.data = None
         self.logger = logging.getLogger()
@@ -19,13 +19,13 @@ class Orchestrator(threading.Thread):
         self.analyze_config(self.config)
         self.start()
 
-    # Methode wird beim Erstellen des Orchestrators aufgerufen, analysiert den mode und baut den flow
+    # Methode wird beim Erstellen des EdgeOrchestrators aufgerufen, analysiert den mode und baut den flow
     # mit den angegebenen Komponenten auf. Am Ende werden alle Komponenten auf Fehler geprüft.
     def analyze_config(self, mode):
         self.config = mode
         if self.config is None:
-            self.errors.append("Orchestrator found no mode")
-            self.logger.error("Orchestrator found no mode")
+            self.errors.append("EdgeOrchestrator found no mode")
+            self.logger.error("EdgeOrchestrator found no mode")
             return
         else:
             self.flow = []
@@ -48,7 +48,7 @@ class Orchestrator(threading.Thread):
                     self.errors.append(component.error)
                     component.error = None
                 if len(self.errors) != 0:
-                    self.errors.append("Error in orchestator configuration")
+                    self.errors.append("Error in EdgeOrchestrator configuration")
 
     # method is executed at thread start and only ends when terminate() is called.
     def run(self):

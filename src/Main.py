@@ -1,4 +1,4 @@
-from component import Orchestrator
+from component import EdgeOrchestrator
 from mainconnector import Connector
 from component import Buffer
 import threading
@@ -19,7 +19,7 @@ class Main:
         self.config = None
         self.buffer = None
         self.connector = None
-        self.orchestrator = None
+        self.edgeOrchestrator = None
 
         # LOGGING-FORMATTER
         loggingFormatter = logging.Formatter('%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s - %(message)s')
@@ -49,7 +49,7 @@ class Main:
         for step in self.config['steps']:
             if step['name'] == "connector":
                 self.connector = Connector.Connector(step['config'], self.buffer)
-        self.orchestrator = Orchestrator.Orchestrator(self.config, self.buffer)
+        self.edgeOrchestrator = EdgeOrchestrator.EdgeOrchestrator(self.config, self.buffer)
         for mode_key in ['buffer', 'steps']:
             if mode_key not in self.config.keys():
                 self.errors.append(' %s missing in Mode config' % mode_key)
@@ -81,9 +81,9 @@ class Main:
                     self.errors.append(self.connector.error)
                     self.connector.error = None
                     error = True
-                if len(self.orchestrator.errors) != 0:
-                    self.errors += self.orchestrator.errors
-                    self.orchestrator.errors.clear()
+                if len(self.edgeOrchestrator.errors) != 0:
+                    self.errors += self.edgeOrchestrator.errors
+                    self.edgeOrchestrator.errors.clear()
                     error = True
                 else:
                     time.sleep(1)
@@ -101,9 +101,9 @@ class Main:
             if self.connector.info is not None:
                 self.info.append(self.connector.info)
                 self.connector.info = None
-            if len(self.orchestrator.info) != 0:
-                self.info += self.orchestrator.info
-                self.orchestrator.info.clear()
+            if len(self.edgeOrchestrator.info) != 0:
+                self.info += self.edgeOrchestrator.info
+                self.edgeOrchestrator.info.clear()
         except Exception as error:
             self.errors.append(str(self.__class__) + ": " + str(error))
             self.logger.exception("ERROR:")
@@ -112,10 +112,10 @@ class Main:
         while self.menuchoice != "exit":
             self.menuchoice = input()
             if self.menuchoice == '1':
-                if self.orchestrator.status == "stop":
-                    self.orchestrator.status = "start"
+                if self.edgeOrchestrator.status == "stop":
+                    self.edgeOrchestrator.status = "start"
                 else:
-                    self.orchestrator.status = "stop"
+                    self.edgeOrchestrator.status = "stop"
             elif self.menuchoice == '2':
                 if self.connector.status == "stop":
                     self.connector.status = "start"
@@ -126,9 +126,9 @@ class Main:
                 self.load_config()
             elif self.menuchoice == '4':
                 self.menuchoice = "exit"
-                if self.orchestrator is not None:
-                    self.orchestrator.status = "stop"
-                    self.orchestrator.terminated = True
+                if self.edgeOrchestrator is not None:
+                    self.edgeOrchestrator.status = "stop"
+                    self.edgeOrchestrator.terminated = True
                 if self.connector is not None:
                     self.connector.status = "stop"
                     self.connector.terminated = True
@@ -143,9 +143,9 @@ class Main:
             with open(mode_path) as json_file:
                 self.config = json.load(json_file)
                 json_file.close()
-            if self.orchestrator is not None:
-                self.orchestrator.status = "stop"
-                self.orchestrator.terminated = True
+            if self.edgeOrchestrator is not None:
+                self.edgeOrchestrator.status = "stop"
+                self.edgeOrchestrator.terminated = True
             if self.connector is not None:
                 self.connector.status = "stop"
                 self.connector.terminated = True
@@ -157,7 +157,7 @@ class Main:
             for step in self.config['steps']:
                 if step['name'] == "connector":
                     self.connector = Connector.Connector(step['config'], self.buffer)
-            self.orchestrator = Orchestrator.Orchestrator(self.config, self.buffer)
+            self.edgeOrchestrator = EdgeOrchestrator.EdgeOrchestrator(self.config, self.buffer)
             for mode_key in ['buffer', 'steps']:
                 if mode_key not in self.config.keys():
                     self.errors.append(' %s missing in Mode config' % mode_key)
@@ -168,7 +168,7 @@ class Main:
             self.logger.exception("ERROR:")
 
     def load_menu(self):
-        print("\nWelcome to X-Integrate Orchestrator-Interface\n")
+        print("\nWelcome to X-Integrate EdgeOrchestrator-Interface\n")
         # Error output
         if len(self.errors) != 0 or len(self.info) != 0:
             print("##############################")
@@ -179,9 +179,9 @@ class Main:
             print("##############################\n")
             self.info.clear()
             self.errors.clear()
-        # Orchestrator status
-        print(f"Orchestrator: " +
-              (f"{self.red}Stopped{self.endc}" if (self.orchestrator.status == 'stop') else
+        # EdgeOrchestrator status
+        print(f"EdgeOrchestrator: " +
+              (f"{self.red}Stopped{self.endc}" if (self.edgeOrchestrator.status == 'stop') else
                f"{self.green}Started{self.endc}"))
         # Connector status
         print(f"Connector: " +
@@ -189,7 +189,7 @@ class Main:
                f"{self.green}Started{self.endc}"))
         # print menu
         print("\nWaiting for command:\n")
-        print("1) Start Orchestrator" if (self.orchestrator.status == 'stop') else "1) Stop Orchestrator")
+        print("1) Start EdgeOrchestrator" if (self.edgeOrchestrator.status == 'stop') else "1) Stop EdgeOrchestrator")
         print("2) Start Connector" if (self.connector.status == 'stop') else "2) Stop Connector")
         print("3) Reload mode")
         print("4) Exit\n")
