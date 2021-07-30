@@ -24,11 +24,11 @@ class Main:
         # LOGGING-FORMATTER
         loggingFormatter = logging.Formatter('%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s - %(message)s')
         # ERROR-HANDLER
-        errorhandler = logging.FileHandler('./logs/error.log')
+        errorhandler = logging.FileHandler('./src/logs/error.log')
         errorhandler.setLevel(logging.WARNING)
         errorhandler.setFormatter(loggingFormatter)
         # DEBUG-HANDLER
-        debughandler = logging.FileHandler('./logs/debug.log')
+        debughandler = logging.FileHandler('./src/logs/debug.log')
         debughandler.setLevel(logging.DEBUG)
         debughandler.setFormatter(loggingFormatter)
         # LOGGER
