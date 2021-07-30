@@ -1,10 +1,37 @@
 # OIH Edge
 
-Open source framework for IIOT Edge Use Cases as part of the Open Integration Hub.
-
 ## Overview
 
-The OIH Edge is a lightweight Python application for Edge connectivity and processing. It will help you to integrate your devices with third party systems through the OIH Platform. 
+OIH Edge is a lightweight Python application and open source framework for IIoT Edge connectivity and processing as part of the Open Integration Hub project. Its main purpose is helping users to integrate their devices in third party systems via the OIH Platform. 
+
+![Overview of OIH Edge architecture](./images/oihedge_overview.png)
+
+### Main
+The Main class ist the entrypoint of the application and performs the following task:
+
+- loading of the main menu and processing of user input ('load_menu()' and 'get_input()').
+- monitoring and display of errors or status changes of all application components ('error_checker()').
+- loading of the configuration file ('load_config()').
+- creation of the buffer, the source component and the orchestrator ('load_config()').
+
+### EdgeOrchestrator
+The EdgeOrchestrator class is responsible for the assembly, data forwarding and controlling of the Edge Flow. Its main functions are:
+
+- assembly of an Edge Flow by using the supplied configuration ('anaylse_config()').
+- data forwarding between the Edge Flow's components ('run_flow()').
+- examination of all Edge Flow components for errors or status changes ('error_and_info_checker()').
+
+### Buffer
+The Buffer class provides a cache for the Source Component to avoid it being slowed down by delays within the Edge Flow. Its main function is:
+
+- caching of the Source Component's data ('fill_buffer()'). The function is called by the Source Component and expects data in dict form.
+ 
+### ComponentBaseClass (abstract class)
+All components that can be part of an Edge Flow have to inherit from the ComponentBaseClass and override its `process()` and `__init__()` methods. This ensures that the Edge Orchestrator can forward their processed data and examine them for errors or status changes. 
+The `process()` method expects data in dict format as input and returns a dict with the same or altered data after it has been processed. The Edge Orchestrator calls this method in order to forward data between the Edge Flow components.
+
+### ConnectorBaseClass (abstract class)
+All Source Components have to inherit from the ConnectorBaseClass and override its `__init__()` and `run()` methods. The ConnectorBaseClass itself inherits from the threading class in order to guarantee a non-blocking query of data. The `run()` method moves within two nested loops depending wether the Source Component is started, stopped or terminated.
 
 ## Deployment
 
