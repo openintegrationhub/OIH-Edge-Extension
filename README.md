@@ -190,6 +190,22 @@ Influx Connector
             }}
 
 ## Data Format
+ 
+The OIH Edge internal data scheme follows the OIH JSON data pattern in which there is a `metadata` and `data` tag. The `metadata` tag contains info like a machine ID or other identifiers for the data source. The `data` tag contains sensor IDs which are represented by tags that can store several data value sets in an array as shown below.
+ 
+```
+{
+    'metadata': {
+        'deviceID': "MainOffice"
+    },
+    'data': {
+        "Sensor1": [
+            {"timestamp":"2021-07-30T09:24:29","value":"26.48"},
+            {"timestamp":"2021-07-30T09:25:29","value":"27.48"}
+        ]
+    }
+}
+```
 
 ## Test Setup
 
