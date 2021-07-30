@@ -1,0 +1,29 @@
+            {
+            "name": "demo-flow",
+            "description": "",
+            "buffer": {
+                "config": {
+                    "type": "local",
+                    "database": {
+
+                    },
+                    "maxsize": 1000,
+                    "maxpolicy": "override"
+                }
+            },
+            "steps": [
+			               {
+                     "name": "connector",
+                     "config": {
+                             "sensors": ["sensor1", "sensor2","sensor3","sensor4","sensor5"],
+                             "randomrange": [1,100],
+                             "period":0.1
+                             }
+                 },
+              {
+      "name": "webhookconnector",
+      "config": {
+          "url": "https://webhook.site/7693fe59-265d-4626-9ba1-0a9c81d59855"
+      }}
+            ]
+        }

@@ -1,0 +1,11 @@
+version: "3.8"
+services:
+  app:
+    build: .
+    #image: oih_edge
+    volumes:
+      - ./mainconfig/:/app/src/mainconfig/
+      - ./maincertificates/:/app/src/maincertificates/
+      - ./logs/:/app/src/logs/
+    stdin_open: true
+    tty: true

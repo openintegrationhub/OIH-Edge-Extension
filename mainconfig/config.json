@@ -1,0 +1,57 @@
+            {
+            "name": "demo-flow",
+            "description": "",
+            "buffer": {
+                "config": {
+                    "type": "local",
+                    "database": {
+
+                    },
+                    "maxsize": 1000,
+                    "maxpolicy": "override"
+                }
+            },
+            "steps": [
+			               {
+                     "name": "connector",
+                     "config": {
+                             "sensors": ["sensor1", "sensor2","sensor3","sensor4","sensor5"],
+                             "randomrange": [1,100],
+                             "period":0.1
+                             }
+                 },
+              {
+                    "name": "influxdbconnector",
+                    "config": {
+                        "host": "",
+                        "port": "8086",
+                        "db": "test",
+                        "measurement": "influx_flow",
+                        "username": "",
+                        "password": ""
+                    }
+                },
+              {
+            "name":"agg",
+            "config":{
+            "default": {"method":"mean",
+                        "window_size":"5s"},
+            "sensor2": {"method":"last",
+                        "window_size":"10s"},
+            "sensor3": {"method":"None",
+                        "window_size":"None"}
+                      }
+                      },
+{
+                    "name": "influxdbconnector",
+                    "config": {
+                        "host": "",
+                        "port": "8086",
+                        "db": "test",
+                        "measurement": "influx_flow_agg",
+                        "username": "",
+                        "password": ""
+                    }
+                }
+            ]
+        }
