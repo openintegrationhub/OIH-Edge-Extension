@@ -381,7 +381,7 @@ The seccond configuration file uses a 2 step Edge Flow with the following compon
 }
 ```
 
-The hereby created Edge Flow produces random sensor values and sends them to a predefined webhook. If there is no local webhook available the url of a test webhook address which can be generated for free on several free webhook test pages (i.e. https://webhook.site) can also be used. After starting the data transfer the webhook page should show the incoming data pakets like seen below:
+The hereby created Edge Flow produces random sensor values and sends them to a predefined webhook. If there is no local webhook available the url of a test webhook address which can be generated for free on several webhook test pages (i.e. https://webhook.site) can also be used. After starting the data transfer the webhook page should show the incoming data pakets like seen below:
 
 ![webhook](./images/webhook.png)
 
