@@ -1,10 +1,23 @@
 # OIH Edge
 
+## Content ##
+[Overview](#overview)
+
+[Deployment](#deployment)
+
+[Edge Flow configuration](#edge-flow-configuration)
+
+[Component configuration](#component-configuration)
+
+[Data format](#data-format)
+
+[Test setup](#test-setup)
+
 ## Overview
 
 OIH Edge is a lightweight Python application and open source framework for IIoT Edge connectivity and processing as part of the Open Integration Hub project. Its main purpose is helping users to integrate their devices in third party systems via the OIH Platform. 
 
-![Overview of OIH Edge architecture](./images/oihedge_overview.png)
+![Overview of OIH Edge architecture](HIER BILD VON OVERVIEW)
 
 ### Main
 The Main class ist the entrypoint of the application and performs the following task:
@@ -35,6 +48,13 @@ All Source Components have to inherit from the ConnectorBaseClass and override i
 
 ## Deployment
 
+### Python 
+
+1. Clone the repository
+2. Install requirements
+3. Create your own Edge Flow configuration or use an existing demo configuration and copy it to the main_config folder
+4. Navigate to src folder and run:
+   - **python Main.py** 
 
 ### Docker 
 
@@ -42,11 +62,11 @@ All Source Components have to inherit from the ConnectorBaseClass and override i
 2. Create your own Edge Flow configuration or use an existing demo configuration and copy it to the main_config folder
 3. Build and run the Docker container with the following command:
    - **docker-compose build**
-   - **docker-compose run app**
+   - **docker-compose run --rm app**
 
-## Edge Flow Configuration
+## Edge Flow configuration
 
-Edge Flow configurations consists of a buffer configuration and a step configuration. The first component of the step configuration is always a connector component (MQTT, OPCUA, DB Connector,...).  Any number of components can be connected downstream of the connector. Usually the last step is a database or webhook component to either persist the data or to transfer it to an OIH flow.
+Edge Flow configurations consist of a buffer configuration and a step configuration. The first component of the step configuration is always a connector component (MQTT, OPCUA, DB Connector,...). Any number of components can be connected downstream of the connector. Usually the last step is a database or webhook component to either persist the data or to transfer it to an OIH flow.
 
 Example Edge Flow configuration:
 
@@ -83,9 +103,9 @@ Example Edge Flow configuration:
         ]
 
 
-## Component Configurations
+## Component configuration
 
-In OIH Edge we have 3 types of components: Source, analytic and sink components. The Source components are always the first step of the OIH Edge Flow. The task of these components is to establish connectivity (to an iot device) and to carry out user-defined data mapping.
+In OIH Edge there are 3 types of components: source, analytics and sink components. The source components are always the first step of the OIH Edge Flow. The task of these components is to establish connectivity (to an IoT device) and to carry out user-defined data mapping.
 
 ### _Source components_
 
@@ -123,7 +143,7 @@ OPCUA Connector
             "pol_time": 0.5}
     }
 
-### _Analytic components_
+### _Analytics components_
 
 Aggregator
 
@@ -216,10 +236,10 @@ Influx Connector
             "password": ""
             }}
 
-## Data Format
- 
+## Data format
+
 The OIH Edge internal data scheme follows the OIH JSON data pattern in which there is a `metadata` and `data` tag. The `metadata` tag contains info like a machine ID or other identifiers for the data source. The `data` tag contains sensor IDs which are represented by tags that can store several data value sets in an array as shown below.
- 
+
 ```
 {
     'metadata': {
@@ -234,5 +254,129 @@ The OIH Edge internal data scheme follows the OIH JSON data pattern in which the
 }
 ```
 
-## Test Setup
+## Test setup
+
+After cloning the repository there are two different test configurations present in the `mainconfig` folder. OIH Edge will automatically use the configuration file with the name `config.json`.  
+
+### Test case 1 `config.json` ###
+
+The standard configuration uses a 4 step Edge Flow with the following components:
+1. Demo connector component
+2. InfluxDB component
+3. Aggregator component
+4. InfluxDB component
+
+```
+{
+    "name": "demo-flow",
+    "description": "",
+    "buffer": {
+        "config": {
+            "type": "local",
+            "database": {
+                },
+            "maxsize": 1000,
+            "maxpolicy": "override"
+        }
+    },
+    "steps": [
+		{
+            "name": "connector",
+            "config": {
+                "sensors": ["sensor1", "sensor2","sensor3","sensor4","sensor5"],
+                "randomrange": [1,100],
+                "period":0.1
+            }
+        },
+        {
+            "name": "influxdbconnector",
+            "config": {
+                "host": "",
+                "port": "8086",
+                "db": "test",
+                "measurement": "influx_flow",
+                "username": "",
+                "password": ""
+            }
+        },
+        {
+            "name":"agg",
+            "config":{
+            "default": {
+                "method":"mean",
+                "window_size":"5s"},
+            "sensor2": {
+                "method":"last",
+                "window_size":"10s"},
+            "sensor3": {
+                "method":"None",
+                "window_size":"None"}
+            }
+        },
+        {
+            "name": "influxdbconnector",
+            "config": {
+                "host": "",
+                "port": "8086",
+                "db": "test",
+                "measurement": "influx_flow_agg",
+                "username": "",
+                "password": ""
+            }
+        }
+    ]
+}
+```
+
+The hereby created Edge Flow produces random sensor values, saves the raw data to an InfluxDB, aggregates the data with different aggregation methods in the next step and saves it to the InfluxDB again. In order to use the first test setup the connection properties and credentials of an existing Influx database have to be inserted into the configuration file. If no Influx database is installed yet it can be downloaded from [influxdata](https://www.influxdata.com/get-influxdb/).
+
+After starting the application as described under [deployment](#deployment) the console output should look something like this:
+![start pass](./images/democase_start_pass.png)
+The status field indicates that the demo connector has been initialized and both instances of the InfluxDB connector are connected to the databases. 
+If the entered properties or credentials are faulty the status field indicates these errors and produces an output as seen below:
+![start fail](./images/democase_start_fail.png) 
+After the connector and the orchestrator both have been started the data transfer begins and can be visualized in Grafana or Chronograf respectively.
+![connectors started](./images/democase_start_both.png)![chronograf](./images/chronograf.png)
+
+### Test case 2 `config2.json` ###
+
+The seccond configuration file uses a 2 step Edge Flow with the following components:
+1. Demo connector component
+2. Webhook component
+
+```
+{
+    "name": "demo-flow",
+    "description": "",
+    "buffer": {
+        "config": {
+            "type": "local",
+            "database": {
+            },
+            "maxsize": 1000,
+            "maxpolicy": "override"
+        }
+    },
+    "steps": [
+		{
+            "name": "connector",
+            "config": {
+                "sensors": ["sensor1", "sensor2","sensor3","sensor4","sensor5"],
+                "randomrange": [1,100],
+                "period":0.1
+            }
+        },
+        {
+            "name": "webhookconnector",
+            "config": {
+            "url": ""
+            }
+        }
+    ]
+}
+```
+
+The hereby created Edge Flow produces random sensor values and sends them to a predefined webhook. If there is no local webhook available the url of a test webhook address which can be generated for free on several free webhook test pages (i.e. https://webhook.site) can also be used. After starting the data transfer the webhook page should show the incoming data pakets like seen below:
+
+![webhook](./images/webhook.png)
 

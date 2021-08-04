@@ -168,7 +168,7 @@ class Main:
             self.logger.exception("ERROR:")
 
     def load_menu(self):
-        print("\nWelcome to X-Integrate EdgeOrchestrator-Interface\n")
+        print("\nWelcome to OIH Edge Interface\n")
         # Error output
         if len(self.errors) != 0 or len(self.info) != 0:
             print("##############################")
