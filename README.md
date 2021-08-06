@@ -17,7 +17,7 @@
 
 OIH Edge is a lightweight Python application and open source framework for IIoT Edge connectivity and processing as part of the Open Integration Hub project. Its main purpose is helping users to integrate their devices in third party systems via the OIH Platform. 
 
-![Overview of OIH Edge architecture](HIER BILD VON OVERVIEW)
+![Overview of OIH Edge architecture](./images/oihedge_overview.png)
 
 ### Main
 The Main class ist the entrypoint of the application and performs the following task:
@@ -331,11 +331,16 @@ The standard configuration uses a 4 step Edge Flow with the following components
 The hereby created Edge Flow produces random sensor values, saves the raw data to an InfluxDB, aggregates the data with different aggregation methods in the next step and saves it to the InfluxDB again. In order to use the first test setup the connection properties and credentials of an existing Influx database have to be inserted into the configuration file. If no Influx database is installed yet it can be downloaded from [influxdata](https://www.influxdata.com/get-influxdb/).
 
 After starting the application as described under [deployment](#deployment) the console output should look something like this:
+
 ![start pass](./images/democase_start_pass.png)
+
 The status field indicates that the demo connector has been initialized and both instances of the InfluxDB connector are connected to the databases. 
 If the entered properties or credentials are faulty the status field indicates these errors and produces an output as seen below:
+
 ![start fail](./images/democase_start_fail.png) 
+
 After the connector and the orchestrator both have been started the data transfer begins and can be visualized in Grafana or Chronograf respectively.
+
 ![connectors started](./images/democase_start_both.png)![chronograf](./images/chronograf.png)
 
 ### Test case 2 `config2.json` ###
@@ -376,7 +381,7 @@ The seccond configuration file uses a 2 step Edge Flow with the following compon
 }
 ```
 
-The hereby created Edge Flow produces random sensor values and sends them to a predefined webhook. If there is no local webhook available the url of a test webhook address which can be generated for free on several free webhook test pages (i.e. https://webhook.site) can also be used. After starting the data transfer the webhook page should show the incoming data pakets like seen below:
+The hereby created Edge Flow produces random sensor values and sends them to a predefined webhook. If there is no local webhook available the url of a test webhook address which can be generated for free on several webhook test pages (i.e. https://webhook.site) can also be used. After starting the data transfer the webhook page should show the incoming data pakets like seen below:
 
 ![webhook](./images/webhook.png)
 
