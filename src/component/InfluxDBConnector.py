@@ -24,7 +24,7 @@ class InfluxConnector(ComponentBaseClass):
 
     def connectToInflux(self):
         try:
-            self.client = InfluxDBClient(host=self.host, port=self.port)
+            self.client = InfluxDBClient(host=self.host, port=self.port, username=self.username, password=self.password)
             self.client.create_database(self.db)
             self.client.switch_database(self.db)
             self.info = 'Connected to Influx-Server'
