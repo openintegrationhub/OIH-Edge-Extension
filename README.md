@@ -48,21 +48,13 @@ All Source Components have to inherit from the ConnectorBaseClass and override i
 
 ## Deployment
 
-### Python 
-
-1. Clone the repository
-2. Install requirements
-3. Create your own Edge Flow configuration or use an existing demo configuration and copy it to the main_config folder
-4. Navigate to src folder and run:
-   - **python Main.py** 
-
 ### Docker 
 
 1. Clone the repository
 2. Create your own Edge Flow configuration or use an existing demo configuration and copy it to the main_config folder
 3. Build and run the Docker container with the following command:
    - **docker-compose build**
-   - **docker-compose run --rm app**
+   - **docker-compose run app**
 
 ## Edge Flow configuration
 
