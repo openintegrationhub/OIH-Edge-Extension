@@ -38,7 +38,7 @@ class Main:
         self.logger.addHandler(debughandler)
 
         ############
-        mode_path = r"./mainconfig/config.json"
+        mode_path = r"./src/mainconfig/config.json"
         with open(mode_path) as json_file:
             self.config = json.load(json_file)
             json_file.close()
@@ -138,7 +138,7 @@ class Main:
                 self.load_menu()
 
     def load_config(self):
-        mode_path = r"./mainconfig/config.json"
+        mode_path = r"./src/mainconfig/config.json"
         try:
             with open(mode_path) as json_file:
                 self.config = json.load(json_file)
