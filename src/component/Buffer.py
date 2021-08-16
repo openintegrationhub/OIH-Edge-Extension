@@ -37,6 +37,7 @@ class Buffer(ComponentBaseClass):
             else:
                 with self.bufferLock:
                     self.bufferempty = True
+                    self.bufferready = False
                     return self.buffer
         except (ValueError, Exception) as error:
             self.error = str(self.__class__) + ": " + str(error)
@@ -44,17 +45,18 @@ class Buffer(ComponentBaseClass):
 
     def localBuffer(self, data):
         with self.bufferLock:
-            #if not self.buffer['meta']['deviceID']:
-            if data['metadata']['deviceID']:
-                self.buffer['metadata']['deviceID'] = data['metadata']['deviceID']
             if self.bufferempty:
                 self.bufferempty = False
+                self.buffer['metadata'] = data['metadata']
                 self.buffer['data'] = {}
                 for sensor in data['data']:
                     self.buffer['data'][sensor] = []
                     for valueset in data['data'][sensor]:
                         self.buffer['data'][sensor].append(valueset)
             else:
+                for device in data['metadata']:
+                    if device not in self.buffer['metadata'].keys():
+                        self.buffer['metadata'][device] = data['metadata'][device]
                 for sensor in data['data']:
                     if sensor not in self.buffer['data'].keys():
                         self.buffer['data'][sensor] = []
