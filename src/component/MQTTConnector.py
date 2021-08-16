@@ -26,11 +26,11 @@ import logging
 import time
 from simplejson import loads, JSONDecodeError
 
-from Component.ConnectorBaseClass import ConnectorBaseClass
-from Converter.mqttConverter import Converter as Converter
+from component.ConnectorBaseClass import ConnectorBaseClass
+from converter.mqttConverter import Converter as Converter
 
 
-class MQTTConnector(ConnectorBaseClass):
+class Connector(ConnectorBaseClass):
     def __init__(self, config, buffer):
         super().__init__(config, buffer)
         self.buffer = buffer
@@ -48,24 +48,16 @@ class MQTTConnector(ConnectorBaseClass):
         self.terminated = False
         self.error = None
         self.info = None
+        self.converter = Converter(self.config["mapping"])
         self.start()
 
     def _on_message(self,client, userdata, msg):
         self.statistics['MessagesReceived'] += 1
-        #self.info = ("MQTT income=", self.statistics['MessagesReceived'])
-        #self.logger.info("MQTT income=", self.statistics['MessagesReceived'])
-        print("MQTT income=", self.statistics['MessagesReceived'])
-
-        topic_ = [i for i, topic in enumerate(self.config['mapping']) if topic['topicName'] == msg.topic]
-
-        if not topic_:
-            self.error = "No converter for this topic " + msg.topic
-            #self.logger.error("No converter for this topic " + msg.topic)
-        else:
-            content = self._decode(msg)
-            #self.logger.info(str(content))
-            result = Converter.convert(self.config['mapping'][topic_[0]]['converter'],content)
-            print("Result = " + str(result))
+        self.logger.info("MQTT income=", self.statistics['MessagesReceived'])
+        content = self._decode(msg)
+        self.logger.info(str(content))
+        result = self.converter.convert(content, msg.topic)
+        self.logger.info("Result = " + str(result))
         if result:
             self.buffer.fillBuffer(result)
             self.statistics['MessagesSent'] += 1
