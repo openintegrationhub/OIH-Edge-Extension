@@ -36,11 +36,13 @@ class InfluxConnector(ComponentBaseClass):
     def json_to_points(self, json_body):
         try:
             points = []
+
             for device in json_body['data']:
                 for field in json_body['data'][device]:
                     point = {
                             "measurement": self.measurement,
-                            "tags": json_body['metadata'],
+                            #"tags": json_body['metadata'],
+                            "tags": self.map_tags(json_body['metadata'],device),
                             "time": field['timestamp'],
                             "fields": {
                                 device: field['value']}
@@ -50,7 +52,17 @@ class InfluxConnector(ComponentBaseClass):
             self.error = str(self.__class__) + ": " + str(error)
             self.logger.exception("ERROR:")
         return points
-        
+
+    def map_tags(self,metadata,device):
+        tags={}
+        if self.config['mapper'] == 'linemetrics':
+            for providerName,value in metadata.items():
+                if device in value['dataStreams'].keys():
+                    tags = {'location': value['location'], 'provider': providerName}
+                    break
+        return tags
+
+
     def process(self, data):
         try:
             self.client.write_points(self.json_to_points(data))
