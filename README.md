@@ -59,7 +59,7 @@ All Source Components have to inherit from the ConnectorBaseClass and override i
      
      **docker-compose -f docker-compose-test.yml build**
      
-     (For additional docker deployment of InfluxDB, Chronograf and Grafana as used in [Test case 1](#test-case-1-configjson))
+     (For additional Docker deployment of InfluxDB, Chronograf and Grafana as used in [Test case 1](#test-case-1-configjson))
    - **docker-compose run app**
 
 ## Edge Flow configuration
