@@ -54,6 +54,12 @@ All Source Components have to inherit from the ConnectorBaseClass and override i
 2. Create your own Edge Flow configuration or use an existing demo configuration and copy it to the main_config folder
 3. Build and run the Docker container with the following command:
    - **docker-compose build**
+     
+     **or**
+     
+     **docker-compose -f docker-compose-test.yml build**
+     
+     (For additional docker deployment of InfluxDB, Chronograf and Grafana as used in [Test case 1](#test-case-1-configjson))
    - **docker-compose run app**
 
 ## Edge Flow configuration
@@ -320,7 +326,9 @@ The standard configuration uses a 4 step Edge Flow with the following components
 }
 ```
 
-The hereby created Edge Flow produces random sensor values, saves the raw data to an InfluxDB, aggregates the data with different aggregation methods in the next step and saves it to the InfluxDB again. In order to use the first test setup the connection properties and credentials of an existing Influx database have to be inserted into the configuration file. If no Influx database is installed yet it can be downloaded from [influxdata](https://www.influxdata.com/get-influxdb/).
+The hereby created Edge Flow produces random sensor values, saves the raw data to an InfluxDB, aggregates the data with different aggregation methods in the next step and saves it to the InfluxDB again. 
+In order to use the first test setup the connection properties and credentials of an existing Influx database have to be inserted into the configuration file. If no Influx database is installed yet it can 
+be downloaded from [influxdata](https://www.influxdata.com/get-influxdb/) or deployed automatically by running `docker-compose-test` as described under [deployment](#deployment).
 
 After starting the application as described under [deployment](#deployment) the console output should look something like this:
 
