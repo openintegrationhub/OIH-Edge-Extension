@@ -1,11 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Created on Thu Nov 12 14:14:35 2020
-Anonymizer Component of the On-Edge Adapter.
-TO-DO:
-    1)Error handling
-    2)Doc of some functions
-    3)Test functionality of randomizer and categorizer
+Anonymizer Component of the OIH-Edge .
 @author: AUS
 """
 import numpy as np
@@ -34,8 +30,8 @@ from component.ComponentBaseClass import ComponentBaseClass
 #     'default': {
 #         'name':'thresholder',
 #             'window': 10,
-#             'threshold':(100,200),
-#             'substitution': (120,180)  #also calcuation or deletion of th sub values is possible. e.g. ('delete','mean')
+#             'threshold':[100,200],
+#             'substitution': [120,180]  #also calcuation or deletion of th sub values is possible. e.g. ('delete','mean')
 #         },
 #     'Sensor2':{
 #         'name':'skipN',
@@ -62,11 +58,8 @@ from component.ComponentBaseClass import ComponentBaseClass
 #         },
 #     'Sensor6':{
 #         'name':'categorizer',
-#         'cats':[-float("inf"),10,20,30,40,float("inf")],   #categories <10, 10-20, 20-30, 30-40, >40   #-float("inf")
+#         'cats':[0,10,20,30,40,50],   #categories <10, 10-20, 20-30, 30-40, >40   #-float("inf")
 #         'labels':[1,2,3,4,5]    #len(labels) must be len(cats)-1
-#          oder
-#         'cats':(-30,130,50)
-#         'labels':False
 #         },
 #     }
 #
@@ -286,11 +279,12 @@ class Anonymizer(ComponentBaseClass):
             for sensor in self.iter_data['data']:
                 if sensor in self.config:
                     self.sensor_config=self.config[sensor]
-                elif sensor not in self.ano_methods:
-                    raise ValueError('Anonymization method %s not known' %(sensor))
                 else:
                     self.sensor_config=self.config['default']
                     
+                if self.sensor_config['name'] not in self.ano_methods:
+                    raise ValueError('Anonymization method %s not known' %(self.sensor_config['name']))               
+                
                 if self.sensor_config['name']==None:
                     self.synchron(self.iter_data['data'][sensor],sensor)
                 elif self.sensor_config['name']=='hider':
@@ -311,7 +305,7 @@ class Anonymizer(ComponentBaseClass):
             self.wait=True
             return self.ret_data
         else:
-            print("Anonymizer didnt achieve necessary window size")
+            #self.info = ("Anonymizer didnt achieve necessary window size ")
             return None
         
                 
