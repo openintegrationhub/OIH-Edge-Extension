@@ -1,4 +1,4 @@
-from component import Aggregator, Anonymizer,InfluxDBConnector, WebhookConnector
+from component import Aggregator_Timebased,Aggregator, Anonymizer,InfluxDBConnector, WebhookConnector
 import threading
 import logging
 
@@ -33,6 +33,9 @@ class EdgeOrchestrator(threading.Thread):
             for step in self.config['steps']:
                 if step['name'] == 'anonymizer':
                     component = Anonymizer.Anonymizer(step['config'])
+                    self.flow.append(component)
+                elif step['name'] == 'aggregator_ts':
+                    component = Aggregator_Timebased.Aggregator(step['config'])
                     self.flow.append(component)
                 elif step['name'] == 'aggregator':
                     component = Aggregator.Aggregator(step['config'])
