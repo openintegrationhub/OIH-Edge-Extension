@@ -45,7 +45,7 @@ class Connector(ConnectorBaseClass):
         try:
             self.data = {
                 'metadata': {
-                    'deviceID': 'DeviceX'
+                    
                 },
                 'data': {
                 }
