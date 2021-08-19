@@ -1,11 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Created on Tue Nov  3 14:14:44 2020
-Aggregator Component of the On-Edge Adapter.
-TO-DO:
-    1)Error handling
-    2)Aggregation by time. 
-    3)Doc of some functions
+Aggregator Component of the OIH-Edge.
 @author: AUS
 """
 

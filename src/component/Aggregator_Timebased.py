@@ -74,13 +74,13 @@ class Aggregator(ComponentBaseClass):
 
     def aggregate(self,data,sensor):
         if len(data)> 1:
-            if datetime.strptime(data[-1]['timestamp'],'%Y-%m-%dT %H:%M:%S:%f') > self.reference_ts_new['data'][sensor]:
+            if datetime.strptime(data[-1]['timestamp'],"%Y-%m-%dT%H:%M:%S.%f") > self.reference_ts_new['data'][sensor]:
                 self.wait = False
                 self.reference_ts_old['data'][sensor] = self.reference_ts_new['data'][sensor]
-                self.reference_ts_new['data'][sensor] = self._calc_ref_ts(datetime.strptime(data[-1]['timestamp'],'%Y-%m-%dT %H:%M:%S:%f'), self.reference_ts_old['data'][sensor])
+                self.reference_ts_new['data'][sensor] = self._calc_ref_ts(datetime.strptime(data[-1]['timestamp'],"%Y-%m-%dT%H:%M:%S.%f"), self.reference_ts_old['data'][sensor])
                 
                 data_df = pd.DataFrame(data)
-                data_df['timestamp']=pd.to_datetime(data_df['timestamp'], format='%Y-%m-%dT %H:%M:%S:%f')
+                data_df['timestamp']=pd.to_datetime(data_df['timestamp'], format="%Y-%m-%dT%H:%M:%S.%f")
                 
                 agg_data = data_df[data_df['timestamp']<=self.reference_ts_old['data'][sensor]]
                 
@@ -95,7 +95,7 @@ class Aggregator(ComponentBaseClass):
                     
                 agg_data = agg_data.groupby(pd.Grouper(freq=self.window, origin = pd.Timestamp(self.reference_ts_old['data'][sensor]))).aggregate(self.method)
                 agg_data['timestamp'] = agg_data.index
-                agg_data['timestamp'].dt.strftime('%Y-%m-%dT %H:%M:%S:%f')
+                agg_data['timestamp'].dt.strftime("%Y-%m-%dT%H:%M:%S.%f")
                 
                 self.ret_data['data'][sensor] = agg_data.to_dict('records')
 
@@ -173,7 +173,7 @@ class Aggregator(ComponentBaseClass):
               
                 if self.reference_ts_old_setted == False and self.reference_ts_old['data'][sensor]==None:
                     first_ts=self.iter_data['data'][sensor][0]['timestamp']
-                    ref_ts=datetime.fromtimestamp(datetime.strptime(first_ts,'%Y-%m-%dT %H:%M:%S:%f').timestamp() + float(self.window.split('s')[0]))
+                    ref_ts=datetime.fromtimestamp(datetime.strptime(first_ts,"%Y-%m-%dT%H:%M:%S.%f").timestamp() + float(self.window.split('s')[0]))
                     self.reference_ts_new['data'][sensor]=ref_ts
                     
                 if self.method==None:
