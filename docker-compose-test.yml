@@ -14,7 +14,7 @@ services:
     stdin_open: true
     tty: true
   influxdb:
-    image: influxdb:latest
+    image: influxdb:1.8-alpine
     hostname: influxdb
     ports:
       - '8086:8086'
