@@ -51,17 +51,17 @@ There are two different deployment configurations depending on the test cases yo
 
 ### Basic deployment (creates a Docker container with the Python application):  
 
-a. Clone the repository
-b. Create your own Edge Flow configuration or use an existing demo configuration and copy it to the main_config folder
-c. Build and run the Docker container with the following command:
+1. Clone the repository
+2. Create your own Edge Flow configuration or use an existing demo configuration and copy it to the main_config folder
+3. Build and run the Docker container with the following command:
    - **docker-compose build**
    - **docker-compose run app**
      
 ### Extended deployment (Basic deployment + InfluxDB, Grafana and Chronograf as used in [Test case 1](#test-case-1-configjson))     
 
-a. Clone the repository
-b. Create your own Edge Flow configuration or use an existing demo configuration and copy it to the main_config folder
-c. Build and run the Docker containers with the following command:
+1. Clone the repository
+2. Create your own Edge Flow configuration or use an existing demo configuration and copy it to the main_config folder
+3. Build and run the Docker containers with the following command:
    - **docker-compose -f docker-compose-test.yml build**
    - **docker-compose -f docker-compose-test.yml run app**
 
