@@ -47,20 +47,23 @@ The `process()` method expects data in dict format as input and returns a dict w
 All Source Components have to inherit from the ConnectorBaseClass and override its `__init__()` and `run()` methods. The ConnectorBaseClass itself inherits from the threading class in order to guarantee a non-blocking query of data. The `run()` method moves within two nested loops depending wether the Source Component is started, stopped or terminated.
 
 ## Deployment
+There are two different deployment configurations depending on the test cases you want to use. 
 
-### Docker 
+### Basic deployment (creates a Docker container with the Python application):  
 
-1. Clone the repository
-2. Create your own Edge Flow configuration or use an existing demo configuration and copy it to the main_config folder
-3. Build and run the Docker container with the following command:
+a. Clone the repository
+b. Create your own Edge Flow configuration or use an existing demo configuration and copy it to the main_config folder
+c. Build and run the Docker container with the following command:
    - **docker-compose build**
-     
-     **or**
-     
-     **docker-compose -f docker-compose-test.yml build**
-     
-     (For additional Docker deployment of InfluxDB, Chronograf and Grafana as used in [Test case 1](#test-case-1-configjson))
    - **docker-compose run app**
+     
+### Extended deployment (Basic deployment + InfluxDB, Grafana and Chronograf as used in [Test case 1](#test-case-1-configjson))     
+
+a. Clone the repository
+b. Create your own Edge Flow configuration or use an existing demo configuration and copy it to the main_config folder
+c. Build and run the Docker containers with the following command:
+   - **docker-compose -f docker-compose-test.yml build**
+   - **docker-compose -f docker-compose-test.yml run app**
 
 ## Edge Flow configuration
 
