@@ -53,7 +53,7 @@ There are two different deployment configurations depending on the test cases yo
 
 1. Clone the repository
 2. Create your own Edge Flow configuration or use an existing demo configuration and copy it to the main_config folder
-3. Build and run the Docker container with the following command:
+3. Build and run the Docker container with the following commands:
    - **docker-compose build**
    - **docker-compose run app**
      
@@ -61,7 +61,7 @@ There are two different deployment configurations depending on the test cases yo
 
 1. Clone the repository
 2. Create your own Edge Flow configuration or use an existing demo configuration and copy it to the main_config folder
-3. Build and run the Docker containers with the following command:
+3. Build and run the Docker containers with the following commands:
    - **docker-compose -f docker-compose-test.yml build**
    - **docker-compose -f docker-compose-test.yml run app**
 
