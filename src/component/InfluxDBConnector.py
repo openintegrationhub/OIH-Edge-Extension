@@ -65,7 +65,8 @@ class InfluxConnector(ComponentBaseClass):
 
     def process(self, data):
         try:
-            self.client.write_points(self.json_to_points(data))
+            self.logger.debug("RESULT JSON_TO_POINTS=" + str(self.json_to_points(data)))
+            self.logger.debug("RESULT CLIENTWRITE=" + str(self.client.write_points(self.json_to_points(data))))
         except Exception as error:
             self.error = str(self.__class__) + ": " + str(error)
             self.logger.exception("ERROR:")

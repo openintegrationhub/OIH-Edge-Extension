@@ -53,7 +53,7 @@ class Connector(ConnectorBaseClass):
 
     def _on_message(self,client, userdata, msg):
         self.statistics['MessagesReceived'] += 1
-        self.logger.info("MQTT income=", self.statistics['MessagesReceived'])
+        self.logger.info("MQTT income=" + str(self.statistics['MessagesReceived']))
         content = self._decode(msg)
         self.logger.info(str(content))
         result = self.converter.convert(content, msg.topic)
