@@ -21,8 +21,6 @@ Created on Wed Dec  8 16:39:20 2020
 
 
 import paho.mqtt.client as mqtt
-import threading
-import logging
 import time
 from simplejson import loads, JSONDecodeError
 
@@ -36,14 +34,16 @@ class Connector(ConnectorBaseClass):
         self.buffer = buffer
         self.config = config
         self.statistics = {'MessagesReceived': 0, 'MessagesSent': 0}
-        self.loop_status ="stopped"
-        self._client = mqtt.Client(self.config["clientid"]) # TO-DO: eventually set client id in config -> Client(config['client_id'])
+        self.connected = False
+        self._client = mqtt.Client(self.config["clientid"])
         if "username" in self.config["security"]:
             self._client.username_pw_set(self.config["security"]["username"],
                                          self.config["security"]["password"])
         if "cert_file" in self.config["security"]:
             self._client.tls_set(self.config["security"]["cert_file"])
-        self._client.on_message = self._on_message
+        self._client.on_message = self.on_message
+        self._client.on_connect = self.on_connect
+        self._client.on_disconnect = self.on_disconnect
         self.status = "stop"
         self.terminated = False
         self.error = None
@@ -51,54 +51,73 @@ class Connector(ConnectorBaseClass):
         self.converter = Converter(self.config["mapping"])
         self.start()
 
-    def _on_message(self,client, userdata, msg):
-        self.statistics['MessagesReceived'] += 1
-        self.logger.info("MQTT income=" + str(self.statistics['MessagesReceived']))
-        content = self._decode(msg)
-        self.logger.info(str(content))
-        result = self.converter.convert(content, msg.topic)
-        self.logger.info("Result = " + str(result))
-        if result:
-            self.buffer.fillBuffer(result)
-            self.statistics['MessagesSent'] += 1
+    def __connect(self):
+        try:
+            self._client.connect(self.config["host"], self.config["port"])
+        except Exception as error:
+            self.error = str(self.__class__) + ": " + str(error)
+            self.logger.exception("ERROR:" + str(error))
+            time.sleep(10)
+            self.__connect()
+
+    def on_connect(self, client, userdata, flags, rc):
+        try:
+            self.connected = True
+            self.logger.info("Connected to MQTT broker")
+            self._client.subscribe(self.config["topic"])
+            self.logger.info("Subscribed to topic " + self.config["topic"])
+            self.info = ("Connected to MQTT broker. Subscribed to topic \"" + self.config["topic"] + "\".")
+        except Exception as error:
+            self.error = str(self.__class__) + ": " + str(error)
+            self.logger.exception("ERROR:" + str(error))
+
+    def __disconnect(self):
+        try:
+            self._client.loop_stop(force=False)
+            self.logger.info("Loop status: stopped")
+            self._client.disconnect()
+        except Exception as error:
+            self.error = str(self.__class__) + ": " + str(error)
+            self.logger.exception("ERROR:" + str(error))
+
+    def on_disconnect(self, client, userdata, rc):
+        try:
+            self.connected = False
+            self.info = "Disconnected from MQTT Broker"
+            self.logger.info("Disconnected from MQTT Broker")
+        except Exception as error:
+            self.error = str(self.__class__) + ": " + str(error)
+            self.logger.exception("ERROR:" + str(error))
+
+    def on_message(self, client, userdata, msg):
+        try:
+            self.statistics['MessagesReceived'] += 1
+            self.logger.info("MQTT income=" + str(self.statistics['MessagesReceived']))
+            content = self._decode(msg)
+            result = self.converter.convert(content, msg.topic)
+            self.logger.info("Result = " + str(result))
+            if result:
+                self.buffer.fillBuffer(result)
+                self.statistics['MessagesSent'] += 1
+        except Exception as error:
+            self.error = str(self.__class__) + ": " + str(error)
+            self.logger.exception("ERROR:" + str(error))
 
     def run(self):
         try:
-            self.__connect()
-            self.info = ("Connected to MQTT broker")
-            #self.logger.info("Connected to MQTT broker")
+            while not self.terminated:
+                while self.status == "start":
+                    if not self.connected:
+                        self.__connect()
+                        self._client.loop_start()
+                        self.logger.info("Loop status: started")
+                    time.sleep(10)
+                if self.connected:
+                    self.__disconnect()
+                time.sleep(1)
         except Exception as error:
             self.error = str(self.__class__) + ": " + str(error)
-            #self.logger.exception("ERROR:")
-        self.info = (str(self._client.subscribe(self.config["topic"])) + "Subscribed to topic " + self.config["topic"])
-        #self.logger.info(str(self._client.subscribe(self.config["topic"])) + "Subscribed to topic " + self.config["topic"])
-        while not self.terminated:
-            while self.status == "start":
-                #self.info = ("status:",self.status)
-                if self.status == "start":
-                    #self.executor.submit(self.start_loop())
-                    self.start_loop()
-                    #self.startsubscription.set()
-                elif self.status == "stop":
-                    self.__disconnect()
-                time.sleep(10)
-
-    def __disconnect(self):
-        self.info = ("Loop Status:", self.loop_status)
-        if self.loop_status == "running":
-            self._client.loop_stop(force=False)
-            self.loop_status="stopped"
-            #self.info = ("Disconnected from MQTT broker")
-            #self.logger.info("Disconnected from MQTT broker")
-
-    def __connect(self):
-        self._client.connect(self.config["host"], self.config["port"])
-
-    def start_loop(self):
-        #self.info = ("Inside query. Loop Status:", self.loop_status)
-        if self.loop_status=="stopped":
-            self._client.loop_start()
-            self.loop_status="running"
+            self.logger.exception("ERROR:" + str(error))
 
     def _decode(self,message):
         try:
