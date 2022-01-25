@@ -1,0 +1,7 @@
+version: "3.8"
+services:
+  anonymizer:
+    build: .
+    volumes:
+      - ./configs/config.json:/app/configs/config.json
+      - ./configs/logging.yml/:/app/configs/logging.yml
