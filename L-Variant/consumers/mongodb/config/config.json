@@ -1,0 +1,11 @@
+{
+	"name": "mongodb_consumer",
+   	"kafka_broker": "localhost:9092",
+   	"source_topic": "mqtt",
+   	"mongodb_host": "localhost",
+   	"mongodb_port": "27017",
+	"mongodb_username": "root",
+	"mongodb_password": "rootpassword",
+	"mongo_db": "mqtt",
+	"mongodb_collection": "linemetrics"
+}
