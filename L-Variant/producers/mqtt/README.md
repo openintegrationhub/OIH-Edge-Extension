@@ -10,28 +10,27 @@ This component subscribes to one or more topics of an MQTT broker and writes thi
 Configuration can be supplied by filling out required fields in config.json file as seen below. 
 
 ```
-# {
-#   "name": "mqtt_producer",
-#   "kafka_broker": "",
-# 	"sink_topic": "mqtt",
-# 	"mqtt_broker": "localhost",  #MQTT Broker hostname
-#   "mqtt_port": 1883,
-#   "deviceid":"device_4711",
-#   "security": {
-#       "cert_file": "path",
-#       "username": "user",
-#       "password": "password"
-#   },
-#   "mqtt_topics": "Server1/sensor1",1),("Server2/sensor2"),1), ...], #List of tuples containing topic names as well as
-#        QOS levels
-#   "mapping": [{
-#       "topicName": "account/1994",
-#       "converter": {
-#           "type": "linemetrics",
-#           "filter": {
-#           }
-#   }]
-# }
+{
+   "name": "mqtt_producer",
+   "kafka_broker": "",
+   "sink_topic": "mqtt",
+   "mqtt_broker": "localhost",  
+   "mqtt_port": 1883,
+   "deviceid":"device_4711",
+   "security": {
+      "cert_file": "path",
+      "username": "user",
+      "password": "password"
+  },
+  "mqtt_topics": "Server1/sensor1",1),("Server2/sensor2"),1), ...],
+  "mapping": [{
+      "topicName": "account/1994",
+      "converter": {
+          "type": "linemetrics",
+          "filter": {
+          }
+  }]
+}
 ```
 
 ## Deployment

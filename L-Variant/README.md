@@ -1,7 +1,7 @@
 # <div align="center">OIH-Kafka-Edge</div>
 
 ## Description
-OIH-Kafka-Edge is a software solution for deploying, connecting and managing different IIoT data producers, consumers and processing streams via a Kafka cluster and FastAPI backend.  
+OIH-Kafka-Edge is a software solution for deploying, connecting and managing different IIoT data producers, consumers and processing streams via a Kafka cluster.  
 
 ## Content
 

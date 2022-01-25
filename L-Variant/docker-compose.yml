@@ -49,11 +49,4 @@ services:
           KAFKA_CLUSTERS_0_NAME: Kafka-Cluster
           KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: 'broker:29092'
           KAFKA_CLUSTERS_0_ZOOKEEPER: 'zookeeper:2181'   
-         
-    mongodb_container:
-        image: mongo:latest
-        environment:
-            MONGO_INITDB_ROOT_USERNAME: root
-            MONGO_INITDB_ROOT_PASSWORD: rootpassword
-        ports:
-            - 27017:27017
+
