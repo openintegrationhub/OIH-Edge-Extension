@@ -8,7 +8,7 @@ Created on Tue Nov 24 08:09:23 2020
 import datetime
 import time
 import random
-from component.ConnectorBaseClass import ConnectorBaseClass
+from component.connector_base_class import ConnectorBaseClass
 
 # Example config structure
 # 'config': {
