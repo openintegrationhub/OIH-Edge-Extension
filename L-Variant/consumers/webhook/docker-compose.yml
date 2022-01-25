@@ -1,0 +1,9 @@
+version: "3"
+services:
+  webhook:
+    build: .
+    network_mode:
+      host
+    volumes:
+      - ./logs/:/webhook/logs/
+      - ./config/:/webhook/config/
