@@ -46,6 +46,27 @@ Kafka-UI is an open source Kafka management tool and can be accessed by a web br
 Kafka-UI provides a web interface for inspecting the current state of the connected Kafka cluster or managing topics and 
 messages.
 
+## Deployment
+
+The initial deployment sets up a Kafka cluster containing the Kafka Zookeeper, a Kafka broker and the Kafka-UI management 
+tool.
+
+> 1. Clone the repository
+> 2. Create your own Edge Flow configuration or use an existing demo configuration and copy it to the main_config folder
+> 3. To build and run the Docker containers navigate to the project root folder in a console window and execute the 
+> following commands:
+> - **docker-compose build**
+> - **docker-compose run app**
+
+The Kafka-UI can be accessed by a web browser via the following address:
+> **Kafka-UI**: http://localhost:8081 
+
+After the initial deployment is complete other components can be started individually at any time. The deployment and 
+configuration of the available components is explained in the [Components](#components) section.
+
+Alternatively there are two demo cases that can be used to deploy a package of preconfigured components. These demo 
+cases are explained further in the [Test setup](#test-setup) section.
+
 ## Components
 
 All L-Variant components are deployed as single Docker containers and can be divided in three different groups that are
@@ -70,28 +91,6 @@ write the result into another topic. The following sub-chapters describe how to 
 - #### [Pay-per-x](./streams/payperx/README.md) 
 - #### [Aggregator](./streams/aggregator/README.md)
 - #### [Anonymizer](./streams/anonymizer/README.md)
-
-
-## Deployment
-
-The initial deployment sets up a Kafka cluster containing the Kafka Zookeeper, a Kafka broker and the Kafka-UI management 
-tool.
-
-> 1. Clone the repository
-> 2. Create your own Edge Flow configuration or use an existing demo configuration and copy it to the main_config folder
-> 3. To build and run the Docker containers navigate to the project root folder in a console window and execute the 
-> following commands:
-> - **docker-compose build**
-> - **docker-compose run app**
-
-The Kafka-UI can be accessed by a web browser via the following address:
-> **Kafka-UI**: http://localhost:8081 
-
-After the initial deployment is complete other components can be started individually at any time. The deployment and 
-configuration of the available components is explained in the [Components](#components) section.
-
-Alternatively there are two demo cases that can be used to deploy a package of preconfigured components. These demo 
-cases are explained further in the [Test setup](#test-setup) section.
 
 ## Data format
 
