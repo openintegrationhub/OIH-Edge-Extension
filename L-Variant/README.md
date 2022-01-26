@@ -247,4 +247,5 @@ To stop the demo cases execute one of the following commands:
 > - **docker-compose -f docker-compose_demo_1.yml down** (deletes the containers after stopping)
 
 ## Contribution
+
 If you want to write a documentation for your component use this [template](./docs/doc_template.md) as basic structure.
