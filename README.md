@@ -17,14 +17,18 @@ OIH platform. The OIH Edge Extension is available in two variants which are call
 # Content
 
 [<h3>OIH Edge Extension S-Variant</h3>](./S-Variant/README.md)
-- [Overview](#overview)
+- [Overview](./S-Variant/README.md#overview)
 - [Deployment](./S-Variant/README.md#deployment)
-- [Edge Flow configuration](#edge-flow-configuration)
-- [Component configuration](#component-configuration)
+- [Edge Flow configuration](./S-Variant/README.md#edge-flow-configuration)
+- [Component configuration](./S-Variant/README.md#component-configuration)
 - [Data format](./S-Variant/README.md#data-format)
-- [Test setup](#test-setup)
+- [Test setup](./S-Variant/README.md#test-setup)
 
 [<h3>OIH Edge Extension L-Variant</h3>](./L-Variant/README.md)
-- [Overview](#overview)
-- [Deployment](#deployment)
+- [Overview](./L-Variant/README.md#overview)
+- [Components](./L-Variant/README.md#components)
+- [Deployment](./L-Variant/README.md#deployment)
+- [Data format](./L-Variant/README.md#data-format)
+- [Test setup](./L-Variant/README.md#test-setup)
+- [Contribution](./L-Variant/README.md#contribution)
 
