@@ -1,4 +1,4 @@
-[Go back](../../README.md)
+[Go back](../../README.md#components)
 
 # PayperX Component as Faust Stream
 
