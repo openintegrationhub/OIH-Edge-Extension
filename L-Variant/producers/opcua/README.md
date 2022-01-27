@@ -42,5 +42,11 @@ Describe how the component can be deployed like seen below
 3. build and run the Docker container with the following commands:
    - **docker-compose build**
    - **docker-compose run opcua**
+
+To stop the containers use:
+> - **docker-compose stop**
+>
+> or
+> - **docker-compose down** (deletes the containers after stopping)
   
 

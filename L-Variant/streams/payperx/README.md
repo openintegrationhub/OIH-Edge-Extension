@@ -3,7 +3,25 @@
 # PayperX Component as Faust Stream
 
 ## Description
-...
+
+The Pay-Per-X component can be used to demonstrate a pay-per-use model that produces certain performance indices like 
+risk or total cost. These values are calculated with the machine data that is produced by the IIoT-Simulator component.
+
+The Formulas for said indices are defined as:
+
+> -index of use: current * voltage * duration * price/consumption = consumptionCosts
+> 
+> current and voltage are specified as sensor data and the price/consumption is specified in the config.
+
+> -risk index: riskCost * (quantity/minimimQuantity) = riskCosts
+>
+> riskCost and minimumQuantity is specified in the config.
+
+> -fix: fixedCost/time * duration = fixedCosts
+> 
+> fixedCost/time is specified in the config.
+
+> -total: accumulatedConsumptionCost + accumulatedRiskCost + accumulatedFixCost = totalCost
 
 ## Configuration
 The configuration consist of the payperx component configuration (payper_xonfig) and the faust app configuration (faustapp_config). 
@@ -40,5 +58,11 @@ When you want to deploy your Stream, you should...
 3. build and run the Docker container with the following commands:
    - **docker-compose build**
    - **docker-compose run payperx**
+
+To stop the containers use:
+> - **docker-compose stop**
+>
+> or
+> - **docker-compose down** (deletes the containers after stopping)
   
 

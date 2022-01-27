@@ -14,8 +14,8 @@ config= {
    'source_topic':'stream_agg_source',
    'aggregated_topic':'stream_agg_sink',
    'faust_config':{
-         id:,
-         broker:)
+         id: '',
+         broker: '')
    },
    'sensor_config': {
          'default': {"method": 'mean',
@@ -33,5 +33,11 @@ Describe how the component can be deployed like seen below
 3. build and run the Docker container with the following commands:
    - **docker-compose build**
    - **docker-compose run aggregator**
+
+To stop the containers use:
+> - **docker-compose stop**
+>
+> or
+> - **docker-compose down** (deletes the containers after stopping)
   
 

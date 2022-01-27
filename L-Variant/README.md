@@ -48,6 +48,8 @@ messages.
 
 ## Deployment
 
+### Initial deployment
+
 The initial deployment sets up a Kafka cluster containing the Kafka Zookeeper, a Kafka broker and the Kafka-UI management 
 tool.
 
@@ -60,6 +62,22 @@ tool.
 
 The Kafka-UI can be accessed by a web browser via the following address:
 > **Kafka-UI**: http://localhost:8081 
+
+### Extended initial deployment
+
+If you don't have access to an Influx database, Chronograf or Grafana you can use the extended initial deployment method
+that deploys these components in addition to the Kafka cluster and Kafka-UI.
+
+The Docker containers with the Grafana and Chronograf data management and visualization tools can be accessed by a web
+browser via the following addresses:
+> **Grafana**: http://localhost:3000 <br>
+> **Chronograf**: http://localhost:8888
+
+To stop the containers use:
+> - **docker-compose stop**
+>
+> or
+> - **docker-compose down** (deletes the containers after stopping)
 
 After the initial deployment is complete other components can be started individually at any time. The deployment and 
 configuration of the available components is explained in the [Components](#components) section.

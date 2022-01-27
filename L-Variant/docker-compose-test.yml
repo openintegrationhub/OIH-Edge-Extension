@@ -1,0 +1,90 @@
+---
+version: '3'
+services:    
+    zookeeper:
+        image: confluentinc/cp-zookeeper:6.2.0
+        hostname: zookeeper
+        container_name: zookeeper
+        ports:
+          - "2181:2181"
+        environment:
+          ZOOKEEPER_CLIENT_PORT: 2181
+          ZOOKEEPER_TICK_TIME: 2000
+
+    broker:         
+        image: confluentinc/cp-kafka:6.2.0
+        hostname: broker
+        container_name: broker
+        depends_on:
+            - zookeeper
+        ports:
+            - "29092:29092"
+            - "9092:9092"
+            - "9101:9101"
+            - "19092:19092"
+        environment:
+            KAFKA_BROKER_ID: 1
+            KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+            KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONNECTIONS_FROM_HOST:PLAINTEXT,FAUST:PLAINTEXT
+            KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:29092,CONNECTIONS_FROM_HOST://localhost:9092
+            KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+            KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+            KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+            KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+            KAFKA_JMX_PORT: 9101
+            KAFKA_JMX_HOSTNAME: localhost
+            TOPIC_AUTO_CREATE: TRUE
+
+    kafka-ui:
+        image: provectuslabs/kafka-ui
+        hostname: kafka-ui
+        container_name: kafka-ui
+        depends_on:
+          - broker
+          - zookeeper
+        ports:
+          - 8081:8080
+        restart: always
+        environment:
+          KAFKA_CLUSTERS_0_NAME: Kafka-Cluster
+          KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: 'broker:29092'
+          KAFKA_CLUSTERS_0_ZOOKEEPER: 'zookeeper:2181'
+
+    influxdb:
+      image: influxdb:1.8-alpine
+      hostname: influxdb
+      ports:
+          - '8086:8086'
+      volumes:
+          - influxdb-storage:/var/lib/influxdb
+      environment:
+          - INFLUXDB_DB=demo
+          - INFLUXDB_ADMIN_USER=${INFLUXDB_USERNAME}
+          - INFLUXDB_ADMIN_PASSWORD=${INFLUXDB_PASSWORD}
+
+    chronograf:
+      image: chronograf:latest
+      ports:
+          - '127.0.0.1:8888:8888'
+      volumes:
+          - chronograf-storage:/var/lib/chronograf
+      depends_on:
+          - influxdb
+      environment:
+          - INFLUXDB_URL=http://influxdb:8086
+          - INFLUXDB_USERNAME=${INFLUXDB_USERNAME}
+          - INFLUXDB_PASSWORD=${INFLUXDB_PASSWORD}
+
+    grafana:
+      image: grafana/grafana:latest
+      ports:
+          - '3000:3000'
+      volumes:
+          - grafana-storage:/var/lib/grafana
+          - ./grafana/config:/etc/grafana
+      depends_on:
+          - influxdb
+      environment:
+          - GF_SECURITY_ADMIN_USER=${GRAFANA_USERNAME}
+          - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+
