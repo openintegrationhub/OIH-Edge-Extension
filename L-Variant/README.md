@@ -155,36 +155,7 @@ InfluxDB-Consumer      PayperX-Stream
 
 It is stored in a file called `docker-compose_demo_1.yml` and can be found inside the `/democases` folder.
 
-```
----
-version: "3.8"
-services:    
-    simulator:
-        build: ./../producers/ematecsimulator/.
-        volumes:
-            - ./../producers/ematecsimulator/configs/config_democase_1.json:/app/configs/config.json
-            - ./../producers/ematecsimulator/configs/logging_democase_1.yml/:/app/configs/logging.yml
-    influx_consumer:
-        build: ./../consumers/influx/.
-        network_mode:
-          host
-        volumes:
-          - ./../consumers/influx/logs/demo_case_1_logs/:/influx/logs/
-          - ./../consumers/influx/config/config_demo_case_1.json:/influx/config/config.json
-    payperx:
-        build: ./../streams/payperx/.
-        network_mode:
-            host
-        volumes:
-            - ./../streams/payperx/config/config_democase_1.json:/app/config/config.json
-    influx_consumer_2:
-        build: ./../consumers/influx/.
-        network_mode:
-          host
-        volumes:
-          - ./../consumers/influx/logs/demo_case_1_logs_2/:/influx/logs/
-          - ./../consumers/influx/config/config_demo_case_1_influxconsumer_2.json:/influx/config/config.json
-```
+
 
 To deploy it navigate to the `/democases` folder and execute to following command in a console window:
 
@@ -212,46 +183,6 @@ InfluxDB-Consumer      Aggregator-Stream
 
 It is stored in a file called `docker-compose_demo_2.yml` and can be found inside the `/democases` folder.
 
-```
----
-version: "3.8"
-services:    
-    simulator:
-        build: ./../producers/ematecsimulator/.
-        volumes:
-            - ./../producers/ematecsimulator/configs/config_democase_2.json:/app/configs/config.json
-            - ./../producers/ematecsimulator/configs/logging_democase_2.yml/:/app/configs/logging.yml
-    influx_consumer:
-        build: ./../consumers/influx/.
-        network_mode:
-          host
-        volumes:
-          - ./../consumers/influx/logs/demo_case_2_logs/:/influx/logs/
-          - ./../consumers/influx/config/config_demo_case_2.json:/influx/config/config.json
-    aggregator:
-        build: ./../streams/aggregator/.
-        volumes:
-            - ./configs/config_demo_case_2.json:/app/configs/config.json
-            - ./configs/logging_demo_case_2.yml/:/app/configs/logging.yml
-    influx_consumer_2:
-        build: ./../consumers/influx/.
-        network_mode:
-          host
-        volumes:
-          - ./../consumers/influx/logs/demo_case_1_logs_2/:/influx/logs/
-          - ./../consumers/influx/config/config_demo_case_1_influxconsumer_2.json:/influx/config/config.json
-    anonymizer:
-        build: ./../streams/anoymizer/.
-        volumes:
-            - ./configs/config_demo_case_2.json:/app/configs/config.json
-            - ./configs/logging_demo_case_2.yml/:/app/configs/logging.yml
-    webhook_consumer:
-        build: ./../consumers/influx/.
-        volumes:
-          - ./../consumers/webhook/logs/demo_case_2_logs/:/webhook/logs/
-          - ./../consumers/webhook/config/config_demo_case_2.json:/webhook/config/config.json
-
-```
 
 To deploy it navigate to the `/democases` folder and execute to following command in a console window:
 
