@@ -1,6 +1,6 @@
 [Go back](../../README.md#components)
 
-# PayperX Component as Faust Stream
+# Pay-Per-X Component as Faust Stream
 
 ## Description
 
