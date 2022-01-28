@@ -66,6 +66,7 @@ class Aggregator:
 
         log.logging.info("Kafka Broker is", config['broker'])
         app = faust.App(
+            web_port=config["web_port"],
             id=config['id'],
             broker=config['broker'])
         return app

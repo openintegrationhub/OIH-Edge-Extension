@@ -43,10 +43,10 @@ The configuration consist of the payperx component configuration (payper_xonfig)
         "minStk": 5760
 
     },
-    "faustapp_config":{
-			"id": "",
-            "broker": ""
-        }
+   "faust_config":{
+         "web_port"='',
+         "id": '',
+         "broker": '')
 }
 ```
 

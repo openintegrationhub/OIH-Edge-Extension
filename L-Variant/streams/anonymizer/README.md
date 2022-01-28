@@ -21,8 +21,9 @@ config= {
    'source_topic':'stream_ann_source',
    'anonymized_topic':'stream_ann_sink',
    'faust_config':{
-         id:,
-         broker:)
+         'web_port'='',
+         'id': '',
+         'broker': '')
    },
    'sensor_config': {
      'default': {

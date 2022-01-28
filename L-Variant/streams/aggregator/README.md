@@ -14,8 +14,9 @@ config= {
    'source_topic':'stream_agg_source',
    'aggregated_topic':'stream_agg_sink',
    'faust_config':{
-         id: '',
-         broker: '')
+         'web_port'='',
+         'id': '',
+         'broker': '')
    },
    'sensor_config': {
          'default': {"method": 'mean',

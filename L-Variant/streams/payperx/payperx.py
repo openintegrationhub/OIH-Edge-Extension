@@ -288,6 +288,7 @@ class PayPerX:
 
         print("Kafka Broker is", config['broker'])
         app = faust.App(
+            web_port=config["web_port"],
             id=config["id"],
             broker=config["broker"])
 
