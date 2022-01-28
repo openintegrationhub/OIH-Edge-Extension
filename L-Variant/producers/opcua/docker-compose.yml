@@ -1,0 +1,9 @@
+version: "3"
+services:
+  opcua:
+    build: .
+    network_mode:
+      host
+    volumes:
+      - ./logs/:/opcua/logs/
+      - ./config/:/opcua/config/

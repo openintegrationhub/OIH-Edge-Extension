@@ -1,0 +1,17 @@
+{
+	"payperx_config":{
+        "source_topic": "opcua",
+        "aggregated_topic": "payperx_test",
+        "interval": 10,
+        "bufferType": {
+            "mode": "inMemory"
+        },
+        "nodesets": [["ns=4;s=ZK_Spannung", "ns=4;s=ZK_Strom"], ["ns=4;s=WR_Spannung", "ns=4;s=WR_Strom"]],
+        "kWh": 0.145,
+        "stk": 0.1
+    },
+    "faustapp_config":{
+			"id": "payperx5",
+            "broker": "kafka://localhost:9092"
+        }
+}

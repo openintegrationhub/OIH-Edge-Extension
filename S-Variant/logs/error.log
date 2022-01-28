@@ -1,0 +1,169 @@
+2021-08-18 15:22:41,573 - ERROR - WebhookConnector.py - process - TEST
+2021-08-18 15:22:41,869 - ERROR - WebhookConnector.py - process - TEST
+2021-08-18 15:22:47,955 - ERROR - WebhookConnector.py - process - TEST
+2021-08-18 15:22:48,216 - ERROR - WebhookConnector.py - process - TEST
+2021-08-18 15:23:03,300 - ERROR - WebhookConnector.py - process - TEST
+2021-08-18 15:23:03,698 - ERROR - WebhookConnector.py - process - TEST
+2021-08-18 15:23:09,503 - ERROR - WebhookConnector.py - process - TEST
+2021-08-18 15:23:09,799 - ERROR - WebhookConnector.py - process - TEST
+2021-08-18 15:23:10,983 - ERROR - WebhookConnector.py - process - TEST
+2021-08-18 15:23:11,230 - ERROR - WebhookConnector.py - process - TEST
+2021-08-18 15:23:17,283 - ERROR - WebhookConnector.py - process - TEST
+2021-08-18 15:23:17,640 - ERROR - WebhookConnector.py - process - TEST
+2021-08-18 15:23:44,844 - ERROR - WebhookConnector.py - process - TEST
+2021-08-18 15:23:45,206 - ERROR - WebhookConnector.py - process - TEST
+2021-08-18 15:24:46,386 - ERROR - WebhookConnector.py - process - TEST
+2021-08-18 15:24:46,641 - ERROR - WebhookConnector.py - process - TEST
+2021-08-19 08:12:24,787 - ERROR - WebhookConnector.py - process - TEST
+2021-08-19 08:12:25,056 - ERROR - WebhookConnector.py - process - TEST
+2021-08-19 08:14:15,373 - ERROR - WebhookConnector.py - process - TEST
+2021-08-19 08:14:15,615 - ERROR - WebhookConnector.py - process - TEST
+2021-08-19 08:14:21,872 - ERROR - WebhookConnector.py - process - TEST
+2021-08-19 08:14:22,147 - ERROR - WebhookConnector.py - process - TEST
+2021-08-19 08:14:29,230 - ERROR - WebhookConnector.py - process - TEST
+2021-08-19 08:14:29,530 - ERROR - WebhookConnector.py - process - TEST
+2021-08-19 08:14:50,275 - ERROR - WebhookConnector.py - process - TEST
+2021-08-19 08:15:00,232 - ERROR - WebhookConnector.py - process - TEST
+2021-08-19 08:24:44,671 - ERROR - InfluxDBConnector.py - connectToInflux - ERROR:
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.9/site-packages/urllib3/connection.py", line 159, in _new_conn
+    conn = connection.create_connection(
+  File "/usr/local/lib/python3.9/site-packages/urllib3/util/connection.py", line 61, in create_connection
+    for res in socket.getaddrinfo(host, port, family, socket.SOCK_STREAM):
+  File "/usr/local/lib/python3.9/socket.py", line 953, in getaddrinfo
+    for res in _socket.getaddrinfo(host, port, family, type, proto, flags):
+socket.gaierror: [Errno -2] Name or service not known
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.9/site-packages/urllib3/connectionpool.py", line 670, in urlopen
+    httplib_response = self._make_request(
+  File "/usr/local/lib/python3.9/site-packages/urllib3/connectionpool.py", line 392, in _make_request
+    conn.request(method, url, **httplib_request_kw)
+  File "/usr/local/lib/python3.9/http/client.py", line 1257, in request
+    self._send_request(method, url, body, headers, encode_chunked)
+  File "/usr/local/lib/python3.9/http/client.py", line 1303, in _send_request
+    self.endheaders(body, encode_chunked=encode_chunked)
+  File "/usr/local/lib/python3.9/http/client.py", line 1252, in endheaders
+    self._send_output(message_body, encode_chunked=encode_chunked)
+  File "/usr/local/lib/python3.9/http/client.py", line 1012, in _send_output
+    self.send(msg)
+  File "/usr/local/lib/python3.9/http/client.py", line 952, in send
+    self.connect()
+  File "/usr/local/lib/python3.9/site-packages/urllib3/connection.py", line 187, in connect
+    conn = self._new_conn()
+  File "/usr/local/lib/python3.9/site-packages/urllib3/connection.py", line 171, in _new_conn
+    raise NewConnectionError(
+urllib3.exceptions.NewConnectionError: <urllib3.connection.HTTPConnection object at 0x7f08a8c16760>: Failed to establish a new connection: [Errno -2] Name or service not known
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.9/site-packages/requests/adapters.py", line 439, in send
+    resp = conn.urlopen(
+  File "/usr/local/lib/python3.9/site-packages/urllib3/connectionpool.py", line 726, in urlopen
+    retries = retries.increment(
+  File "/usr/local/lib/python3.9/site-packages/urllib3/util/retry.py", line 446, in increment
+    raise MaxRetryError(_pool, url, error or ResponseError(cause))
+urllib3.exceptions.MaxRetryError: HTTPConnectionPool(host='http', port=80): Max retries exceeded with url: //164.68.116.189:8086/query?q=CREATE+DATABASE+%22test%22 (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7f08a8c16760>: Failed to establish a new connection: [Errno -2] Name or service not known'))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/app/src/component/InfluxDBConnector.py", line 28, in connectToInflux
+    self.client.create_database(self.db)
+  File "/usr/local/lib/python3.9/site-packages/influxdb/client.py", line 746, in create_database
+    self.query("CREATE DATABASE {0}".format(quote_ident(dbname)),
+  File "/usr/local/lib/python3.9/site-packages/influxdb/client.py", line 521, in query
+    response = self.request(
+  File "/usr/local/lib/python3.9/site-packages/influxdb/client.py", line 332, in request
+    response = self._session.request(
+  File "/usr/local/lib/python3.9/site-packages/requests/sessions.py", line 530, in request
+    resp = self.send(prep, **send_kwargs)
+  File "/usr/local/lib/python3.9/site-packages/requests/sessions.py", line 643, in send
+    r = adapter.send(request, **kwargs)
+  File "/usr/local/lib/python3.9/site-packages/requests/adapters.py", line 516, in send
+    raise ConnectionError(e, request=request)
+requests.exceptions.ConnectionError: HTTPConnectionPool(host='http', port=80): Max retries exceeded with url: //164.68.116.189:8086/query?q=CREATE+DATABASE+%22test%22 (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7f08a8c16760>: Failed to establish a new connection: [Errno -2] Name or service not known'))
+2021-08-19 08:25:18,790 - ERROR - InfluxDBConnector.py - connectToInflux - ERROR:
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.9/site-packages/urllib3/connection.py", line 159, in _new_conn
+    conn = connection.create_connection(
+  File "/usr/local/lib/python3.9/site-packages/urllib3/util/connection.py", line 61, in create_connection
+    for res in socket.getaddrinfo(host, port, family, socket.SOCK_STREAM):
+  File "/usr/local/lib/python3.9/socket.py", line 953, in getaddrinfo
+    for res in _socket.getaddrinfo(host, port, family, type, proto, flags):
+socket.gaierror: [Errno -2] Name or service not known
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.9/site-packages/urllib3/connectionpool.py", line 670, in urlopen
+    httplib_response = self._make_request(
+  File "/usr/local/lib/python3.9/site-packages/urllib3/connectionpool.py", line 392, in _make_request
+    conn.request(method, url, **httplib_request_kw)
+  File "/usr/local/lib/python3.9/http/client.py", line 1257, in request
+    self._send_request(method, url, body, headers, encode_chunked)
+  File "/usr/local/lib/python3.9/http/client.py", line 1303, in _send_request
+    self.endheaders(body, encode_chunked=encode_chunked)
+  File "/usr/local/lib/python3.9/http/client.py", line 1252, in endheaders
+    self._send_output(message_body, encode_chunked=encode_chunked)
+  File "/usr/local/lib/python3.9/http/client.py", line 1012, in _send_output
+    self.send(msg)
+  File "/usr/local/lib/python3.9/http/client.py", line 952, in send
+    self.connect()
+  File "/usr/local/lib/python3.9/site-packages/urllib3/connection.py", line 187, in connect
+    conn = self._new_conn()
+  File "/usr/local/lib/python3.9/site-packages/urllib3/connection.py", line 171, in _new_conn
+    raise NewConnectionError(
+urllib3.exceptions.NewConnectionError: <urllib3.connection.HTTPConnection object at 0x7f08b1b64f70>: Failed to establish a new connection: [Errno -2] Name or service not known
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.9/site-packages/requests/adapters.py", line 439, in send
+    resp = conn.urlopen(
+  File "/usr/local/lib/python3.9/site-packages/urllib3/connectionpool.py", line 726, in urlopen
+    retries = retries.increment(
+  File "/usr/local/lib/python3.9/site-packages/urllib3/util/retry.py", line 446, in increment
+    raise MaxRetryError(_pool, url, error or ResponseError(cause))
+urllib3.exceptions.MaxRetryError: HTTPConnectionPool(host='http', port=80): Max retries exceeded with url: //164.68.116.189:8086/query?q=CREATE+DATABASE+%22test%22 (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7f08b1b64f70>: Failed to establish a new connection: [Errno -2] Name or service not known'))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/app/src/component/InfluxDBConnector.py", line 28, in connectToInflux
+    self.client.create_database(self.db)
+  File "/usr/local/lib/python3.9/site-packages/influxdb/client.py", line 746, in create_database
+    self.query("CREATE DATABASE {0}".format(quote_ident(dbname)),
+  File "/usr/local/lib/python3.9/site-packages/influxdb/client.py", line 521, in query
+    response = self.request(
+  File "/usr/local/lib/python3.9/site-packages/influxdb/client.py", line 332, in request
+    response = self._session.request(
+  File "/usr/local/lib/python3.9/site-packages/requests/sessions.py", line 530, in request
+    resp = self.send(prep, **send_kwargs)
+  File "/usr/local/lib/python3.9/site-packages/requests/sessions.py", line 643, in send
+    r = adapter.send(request, **kwargs)
+  File "/usr/local/lib/python3.9/site-packages/requests/adapters.py", line 516, in send
+    raise ConnectionError(e, request=request)
+requests.exceptions.ConnectionError: HTTPConnectionPool(host='http', port=80): Max retries exceeded with url: //164.68.116.189:8086/query?q=CREATE+DATABASE+%22test%22 (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7f08b1b64f70>: Failed to establish a new connection: [Errno -2] Name or service not known'))
+2021-08-19 08:33:07,031 - ERROR - InfluxDBConnector.py - json_to_points - ERROR:
+Traceback (most recent call last):
+  File "/app/src/component/InfluxDBConnector.py", line 45, in json_to_points
+    "tags": self.map_tags(json_body['metadata'],device),
+  File "/app/src/component/InfluxDBConnector.py", line 58, in map_tags
+    if self.config['mapper'] == 'linemetrics':
+KeyError: 'mapper'
+2021-08-19 08:57:50,112 - ERROR - InfluxDBConnector.py - process - ERROR:
+Traceback (most recent call last):
+  File "/app/src/component/InfluxDBConnector.py", line 68, in process
+    self.logger.debug("RESULT JSON_TO_POINTS=" + self.json_to_points(data))
+TypeError: can only concatenate str (not "list") to str
+2021-08-23 11:34:25,695 - ERROR - Main.py - load_config - ERROR:
+Traceback (most recent call last):
+  File "/app/src/Main.py", line 159, in load_config
+    self.connector = Connector.Connector(step['config'], self.buffer)
+  File "/app/src/mainconnector/Connector.py", line 40, in __init__
+    self._client = mqtt.Client(self.config["clientid"]) # TO-DO: eventually set client id in config -> Client(config['client_id'])
+KeyError: 'clientid'

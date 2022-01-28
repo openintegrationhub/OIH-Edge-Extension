@@ -1,0 +1,9 @@
+version: "3"
+services:
+  influx:
+    build: .
+    network_mode:
+      host
+    volumes:
+      - ./logs/:/influx/logs/
+      - ./config/:/influx/config/

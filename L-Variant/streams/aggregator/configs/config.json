@@ -1,0 +1,13 @@
+{
+	"source_topic":"iiot-simdata2",
+	"aggregated_topic":"iiot-simdata_agg",
+	"faust_config":{
+		"id":"test",
+		"broker":"kafka://localhost:19092"
+	},
+	"sensor_config": {
+		"default": {"method": "mean",
+				"window_size": "5s"},
+		"zk_spannung": {"method": "mean",
+				"window_size": "5s"}}
+}
