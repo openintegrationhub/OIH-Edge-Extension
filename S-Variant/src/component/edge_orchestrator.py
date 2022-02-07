@@ -9,7 +9,7 @@ import logging
 import copy
 
 from component import aggregator_timebased, aggregator, \
-    anonymizer, influx_db_connector, webhook_connector, mongo_db_connector, \
+    anonymizer, influx_db_connector, webhook_connector, \
     pay_per_x
 
 
@@ -126,10 +126,6 @@ class EdgeOrchestrator(threading.Thread):
                     self.flow.append(component)
                 elif step['name'] == 'webhookconnector':
                     component = webhook_connector.WebhookConnector(
-                        step['config'])
-                    self.flow.append(component)
-                elif step['name'] == 'mongodbconnector':
-                    component = mongo_db_connector.MongoDBConnector(
                         step['config'])
                     self.flow.append(component)
             for component in self.flow:

@@ -13,7 +13,7 @@ from datetime import datetime
 from influxdb import DataFrameClient
 import pandas as pd
 
-from component.ComponentBaseClass import ComponentBaseClass
+from component.component_base_class import ComponentBaseClass
 
 datetime.utcnow()
 
