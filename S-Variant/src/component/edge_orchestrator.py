@@ -10,7 +10,7 @@ import copy
 
 from component import aggregator_timebased, aggregator, \
     anonymizer, influx_db_connector, webhook_connector, \
-    pay_per_x
+    pay_per_use
 
 
 class EdgeOrchestrator(threading.Thread):
@@ -114,8 +114,8 @@ class EdgeOrchestrator(threading.Thread):
                 elif step['name'] == 'aggregator_ts':
                     component = aggregator_timebased.Aggregator(step['config'])
                     self.flow.append(component)
-                elif step['name'] == 'payperx':
-                    component = pay_per_x.PayPerX(step['config'])
+                elif step['name'] == 'payperuse':
+                    component = pay_per_use.PayPerUse(step['config'])
                     self.flow.append(component)
                 elif step['name'] == 'aggregator':
                     component = aggregator.Aggregator(step['config'])

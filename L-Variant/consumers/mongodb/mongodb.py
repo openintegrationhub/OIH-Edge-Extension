@@ -8,133 +8,223 @@ Created on Wed Dec  2 13:59:20 2020
 #
 # {
 # 	"name": "mongodb_consumer",
-#    	"kafka_broker": "localhost:9092",
-#    	"source_topic": "mqtt",
-#    	"mongodb_host": "localhost",
-#    	"mongodb_port": "27017",
+#   "kafka_broker": "localhost:9092",
+#   "source_topic": "kafka_sink_component_test",
+#   "mongodb_host": "localhost",
+#   "mongodb_port": "27017",
 # 	"mongodb_username": "root",
 # 	"mongodb_password": "rootpassword",
-# 	"mongo_db": "mqtt",
-# 	"mongodb_collection": "linemetrics"
+# 	"mongo_db": "mongodb_consumer_database",
+# 	"mongodb_collection": "mongodb_consumer_collection"
 # }
 import json
-import logging
-import logging.handlers
+
 import pymongo
+from component_base_class.component_base_class import ComponentBaseClass
 from kafka import KafkaConsumer
+from pymongo.errors import CollectionInvalid
+from pymongo.errors import ConnectionFailure
 
 
-class MongoDBConsumer:
+class MongoDBConsumer(ComponentBaseClass):
     def __init__(self):
         """
-            Pull all data from the config file and initialize all major data variables to ensure
+            Pull all data from the config file and initialize all major data
+            variables to ensure
             that the program runs without problems
-        :param config: dict as shown above
         """
         try:
-            # LOGGING-FORMATTER
-            loggingFormatter = logging.Formatter('%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s - %('
-                                                 'message)s')
-            # ERROR-HANDLER
-            errorhandler = logging.handlers.RotatingFileHandler('./logs/error.log', maxBytes=1024 * 1024 * 2,
-                                                                backupCount=9, delay=False)
-            errorhandler.setLevel(logging.WARNING)
-            errorhandler.setFormatter(loggingFormatter)
-            # DEBUG-HANDLER
-            debughandler = logging.handlers.RotatingFileHandler('./logs/debug.log', maxBytes=1024 * 1024 * 2,
-                                                                backupCount=9, delay=False)
-            debughandler.setLevel(logging.DEBUG)
-            debughandler.setFormatter(loggingFormatter)
-            # LOGGER
-            self.logger = logging.getLogger()
-            self.logger.setLevel(logging.DEBUG)
-            self.logger.addHandler(errorhandler)
-            self.logger.addHandler(debughandler)
-
-            mode_path = r"./config/config.json"
-            with open(mode_path) as json_file:
-                config = json.load(json_file)
-                json_file.close()
-            self.config = config
-            self.kafka_broker = config['kafka_broker']
-            self.source_topic = config["source_topic"]
-            self.mongodb_host = config['mongodb_host']
-            self.mongodb_port = config['mongodb_port']
-            self.username = config['mongodb_username']
-            self.password = config['mongodb_password']
-            self.mongo_db = config['mongo_db']
-            self.mongodb_collection = config['mongodb_collection']
-            self.consumer = KafkaConsumer(
-                    self.source_topic,
-                    group_id='mongodb_group',
-                    bootstrap_servers=[self.kafka_broker],
-                    auto_offset_reset='earliest'
-            )
+            super().__init__()
         except Exception as error:
-            self.logger.error(str(error))
-        self.terminated = False
-        self.status = "start"
+            print(f'Failure in Base Class, {error}')
+        config_template = {
+            'name': '',
+            'kafka_broker': '',
+            "source_topic": "",
+            "mongodb_host": "",
+            "mongodb_port": "",
+            "mongodb_username": "",
+            "mongodb_password": "",
+            "mongo_db": "",
+            "mongodb_collection": "",
+            "direct_connection": ""
+        }
+        # LOGGER
+        self.logger = self.get_logger()
+        self.config = {}
+        self.kafka_broker = ''
+        self.source_topic = ''
+        self.mongodb_host = ''
+        self.mongodb_port = ''
+        self.username = ''
+        self.password = ''
+        self.mongo_db = ''
+        self.mongodb_collection = ''
+        self.unstored_data = 0
+        self.direct_con = None
+        self.consumer = None
         self.mongodb_client = None
-        self.start()
+        self.load_config(config_template)
+        if not self.terminated:
+            self.start()
+
+    def load_config(self, config_template: dict = None, source='file'):
+        """ Loads the config for the component, either from env variables
+        or from a file.
+
+        :param config_template: dict with all required fields for the
+        component to work.
+        :param source: source of the config, either file or env
+        :return: None
+        """
+        if source != 'file':
+            config = self.get_config(
+                config_template,
+                source=source,
+                file_path=f'/config/{self.path_name}'
+            )
+        else:
+            config = self.wait_for_config_insertion()
+        self.config = config
+        try:
+            if config and all(key in self.config
+                              for key in config_template.keys()):
+                self.kafka_broker = config['kafka_broker']
+                self.source_topic = config["source_topic"]
+                self.mongodb_host = config['mongodb_host']
+                self.mongodb_port = config['mongodb_port']
+                self.username = config['mongodb_username']
+                self.password = config['mongodb_password']
+                self.mongo_db = config['mongo_db']
+                self.mongodb_collection = config['mongodb_collection']
+                self.direct_con = config['direct_connection']
+                if (len(self.source_topic) and len(self.kafka_broker)) > 0:
+                    self.consumer = KafkaConsumer(
+                        self.source_topic,
+                        group_id='mongodb_group',
+                        bootstrap_servers=[self.kafka_broker],
+                        auto_offset_reset='earliest',
+                        consumer_timeout_ms=5000
+                    )
+            else:
+                self.logger.error('Missing key(s) in config')
+                print('Missing key(s) in config', flush=True)
+                self.terminated = True
+                return
+        except Exception as error:
+            self.logger.error(f'Error: {error} in load_config')
+            self.terminated = True
 
     def start(self):
-        """
-            This functions sole purpose is to start the
-            programm as specified in the config.
-        :return:
-        """
-        try:
-            if self.mongodb_client is None:
-                self.mongodb_client = self.connect_to_mongodb()
-            while not self.terminated:
-                while self.status == "start":
-                    for msg in self.consumer:
-                        self.write_to_db(msg.value)
-        except Exception as error:
-            self.logger.error(str(error))
+        """ Main function of the mongodb Consumer
 
-    def consume(self, consumer, timeout):
+        :return: None
+        """
         try:
-            while True:
-                message = consumer.poll(timeout)
-                if message is None:
-                    continue
-                yield message
-            consumer.close()
+            while not self.terminated:
+                for msg in self.consumer:
+                    if not self.mongodb_client:
+                        self.mongodb_client = self.connect_to_mongodb()
+                    else:
+                        self.write_to_db(msg.value)
+                    if self.terminated:
+                        break
+        except RuntimeError as run_err:
+            if str(run_err) != 'MongoDB Client unavailable':
+                self.logger.error(f'RunErr: {run_err} in start')
         except Exception as error:
-            self.logger.error(str(error))
+            self.logger.error(f'Error: {error} in start')
+        finally:
+            print("Closing MongoDB client...", flush=True)
+            if self.mongodb_client:
+                self.mongodb_client.close()
+            print('Closing Consumer...')
+            if self.consumer:
+                self.consumer.close()
+        print("Shutdown of MongoDB consumer complete.", flush=True)
+
+    def consume(self, consumer: KafkaConsumer, timeout: int):
+        """ Consumes msgs of a Kafka topic.
+
+        :param consumer: Kafka consumer.
+        :param timeout: timeout timer.
+        """
+        while not self.terminated:
+            message = consumer.poll(timeout)
+            if message is None:
+                continue
+            yield message
 
     def connect_to_mongodb(self):
+        """ Connects the mongodb client to the database.
+
+        :return: None
+        """
         client = None
         try:
-            client = pymongo.MongoClient('mongodb://{}:{}@{}:{}/'.format(self.username, self.password, self.mongodb_host,
-                                                                                      self.mongodb_port))[self.mongo_db][self.mongodb_collection]
+            connection_string = 'mongodb://'
+            if self.username and self.password:
+                connection_string += f'{self.username}:{self.password}@'
+            connection_string += f'{self.mongodb_host}:{self.mongodb_port}'
+            client = pymongo.MongoClient(connection_string,
+                                         directConnection=bool(
+                                             self.direct_con))[
+                self.mongo_db][
+                self.mongodb_collection]
             self.logger.info("Connected to MongoDB-Server")
-        except (ValueError, Exception) as error:
-            self.logger.error(str(error))
+        except CollectionInvalid as col_inv:
+            self.logger.error(f'Invalid Collection, {col_inv}')
+            raise RuntimeError('MongoDB Client unavailable') from col_inv
+        except ConnectionFailure as con_fail:
+            self.logger.error(f'Connection failure, {con_fail}')
+            raise RuntimeError('MongoDB Client unavailable') from con_fail
+        except ValueError as val_error:
+            self.logger.error(f'Invalid Credentials, {val_error}')
+            raise RuntimeError('MongoDB Client unavailable') from val_error
         return client
 
-    def dot_replacer(self, data):
-        result = {'metadata': data['metadata'], 'data': {
-        }}
+    def dot_replacer(self, data: dict) -> dict:
+        """ Replaces '.' in sensor names with '-'.
+
+        :param data: given data
+        :return: data without '.'
+        """
+        if 'metadata' in data:
+            result = {'metadata': data['metadata'], 'data': {}}
+        else:
+            result = {'metadata': '', 'data': {}}
         for sensor in data['data']:
-            if str(sensor).__contains__("."):
-                newsensor = str(sensor).replace(".", "-")
-            else:
-                newsensor = str(sensor)
-            result['data'][newsensor] = []
-            for valueset in data['data'][sensor]:
-                result['data'][newsensor].append(valueset)
+            try:
+                if str(sensor).__contains__("."):
+                    new_sensor = str(sensor).replace(".", "-")
+                else:
+                    new_sensor = str(sensor)
+                result['data'][new_sensor] = []
+                for valueset in data['data'][sensor]:
+                    result['data'][new_sensor].append(valueset)
+            except KeyError as key_err:
+                self.unstored_data += 1
+                self.logger.warning(f'Data not in the right format.'
+                                    f'Unstored: {self.unstored_data}')
+                self.logger.error(key_err)
+                continue
         return result
 
     def write_to_db(self, data):
+        """ Write the given data into the database
+
+        :param data: Given data
+        :return: data
+        """
         try:
-            newdata = self.dot_replacer(json.loads(data))
-            self.mongodb_client.insert_one(newdata)
-        except (TypeError, Exception) as error:
-            self.logger.error(str(error))
+            new_data = self.dot_replacer(json.loads(data))
+            self.mongodb_client.insert_one(new_data)
+        except json.JSONDecodeError as decode_err:
+            self.logger.warning(f'Could not decode message.'
+                                f'Unstored: {self.unstored_data}')
+            self.logger.error(decode_err)
         return data
 
 
 if __name__ == '__main__':
-    consumer = MongoDBConsumer()
+    mongo_consumer = MongoDBConsumer()

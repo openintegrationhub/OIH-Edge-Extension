@@ -11,25 +11,23 @@ Describe how configuration of the component works and supply an example like see
 
 ```
 {
-	"payperx_config":{
-        "source_topic": "opcua",
-        "aggregated_topic": "payperx_test",
-        "interval": 10,
-        "bufferType": {
-            "mode": "inMemory"
-        },
-        "nodesets": [["ns=4;s=ZK_Spannung", "ns=4;s=ZK_Strom"], ["ns=4;s=WR_Spannung", "ns=4;s=WR_Strom"]],
-        "kWh": 0.145,
-        "stk": 0.1,
-        "fix": 0.0031623,
-        "risk": 200,
-        "minStk": 5760
+	"payperuse_config": {
+        "source_topic": "kafka_stream_component_ppu_source",
+        "aggregated_topic": "kafka_source_component_ppu_sink",
+        "window_size": 10,
+        "node_sets": [["sensor01", "sensor02"], 
+                     ["sensor03", "sensor04"]],
+        "price_per_consumption": 0.145,
+        "price_per_unit": 0.1,
+        "fix_costs": 0.0031623,
+        "risk_costs": 200,
+        "minimum_acceptance": 5760
 
     },
-    "faustapp_config":{
-			"id": "",
-            "broker": ""
-        }
+   "faust_config":{
+         "id": "payperuse5",
+         "broker": "kafka://localhost:9092",
+         "port": 6068
 }
 ```
 
@@ -40,6 +38,6 @@ Describe how the component can be deployed like seen below
 2. create a configuration file (config.json) and copy it to the config folder
 3. build and run the Docker container with the following commands:
    - **docker-compose build**
-   - **docker-compose run payperx**
+   - **docker-compose run payperuse**
   
 

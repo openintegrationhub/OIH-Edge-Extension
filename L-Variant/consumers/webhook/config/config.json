@@ -1,6 +1,6 @@
 {
 	"name": "webhook-consumer",
    	"kafka_broker": "localhost:9092",
-   	"source_topic": "opcua",
-   	"webhook_url": "https://webhook.site/b2da0bc8-d095-44ee-8b68-fdf9686e3366"
+   	"source_topic": "kafka_sink_component_test",
+   	"webhook_url": "https://webhook.site/test"
 }

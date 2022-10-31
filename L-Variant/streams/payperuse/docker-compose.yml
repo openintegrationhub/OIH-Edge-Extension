@@ -1,0 +1,13 @@
+version: "3"
+services:
+  payperuse:
+    build: .
+    container_name: ${CONNAME}
+    network_mode:
+      host
+    environment:
+        path_name: ${PATHNAME}
+    volumes:
+      - ./config/:/app/config/
+      - ./logs/:/app/logs/
+      - ./../../component_base_class/component_base_class.py:/app/component_base_class/component_base_class.py

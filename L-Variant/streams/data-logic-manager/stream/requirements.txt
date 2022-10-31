@@ -1,0 +1,4 @@
+faust
+pandas
+PyYAML
+python_drools_sdk

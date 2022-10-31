@@ -1,0 +1,31 @@
+version: "3.8"
+services:
+  wb:
+    build: ./wb .
+    ports: 
+      - 8080:8080
+      - 8001:8001
+  kie:
+    build: ./kie .
+    environment:
+      - KIE_SERVER_LOCATION=http://kie:8080/kie-server/services/rest/server
+      - KIE_SERVER_CONTROLLER=http://wb:8080/business-central/rest/controller
+      - KIE_SERVER_CONTROLLER_USER=admin
+      - KIE_SERVER_CONTROLLER_PWD=admin
+      - KIE_SERVER_PWD=kieserver1!
+      - KIE_SERVER_USER=kieserver
+      - KIE_MAVEN_REPO=http://wb:8080/business-central/maven2
+      - KIE_MAVEN_REPO_USER=admin
+      - KIE_MAVEN_REPO_PASSWORD=admin
+    ports:
+      - 8180:8080
+    depends_on:
+      - wb
+  dlm:
+    build: ./stream .
+    volumes:
+      - ./logs/stream:/app/logs/
+    depends_on:
+      - wb
+      - kie
+  

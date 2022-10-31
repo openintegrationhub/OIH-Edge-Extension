@@ -1,0 +1,40 @@
+{
+	"source_topic": "kafka_stream_component_anom_source",
+	"anom_topic": "kafka_source_component_anom_sink",
+	"faust_config": {
+		"id": "anom_test",
+		"broker": "kafka://localhost:19092",
+		"port": 6066
+	},
+	"sensor_config": {
+		"default": {
+			"name": "thresholder",
+			"window": 5,
+			"threshold": [
+				3,
+				7
+			],
+			"substitution": [
+				3,
+				7
+			]
+		},
+		"sensor01": {
+			"name": "skip_n",
+			"N": 5
+		},
+		"sensor02": {
+			"name": "randomizer",
+			"window": 5,
+			"distribution": {
+				"name": "random",
+                "range": [1,100]
+			}
+		},
+		"sensor03": {
+			"name": "categorizer",
+			"cats": [0,10,20,30,40,50],
+			"labels": [1,2,3,4,5]
+		}
+	}
+}

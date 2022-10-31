@@ -1,0 +1,10 @@
+version: '3.8'
+services:
+  component_base_class_test:
+    build: .
+    network_mode:
+      host
+    environment:
+      text: '{"msg": "test"}'
+      kafka_broker: 'localhost:9092'
+      source_topic: '{'

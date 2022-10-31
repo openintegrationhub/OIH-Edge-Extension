@@ -1,0 +1,46 @@
+package com.myspace.vibrations;
+
+no-loop
+
+rule 'Machine-Two-Class-C-Check'
+    salience 6
+    when
+        $part: Part(
+           machine_id == "2" && 
+           ((
+                (vibration_level_1 < 61 &&
+                vibration_level_1 > -61) 
+                &&
+                (vibration_level_2 > 61 ||
+                vibration_level_2 < -61)
+                &&
+                (vibration_level_3 > 301 ||
+                vibration_level_3 < -301)
+            )
+            ||
+            (
+                (vibration_level_1 > 61 ||
+                vibration_level_1 < -61)
+                &&
+                (vibration_level_2 < 61 &&
+                vibration_level_2 > -61) 
+                &&
+                (vibration_level_3 > 301 ||
+                vibration_level_3 < -301) 
+            ) ||
+            (
+                (vibration_level_2 > 61 ||
+                vibration_level_2 < -61) 
+                &&
+                (vibration_level_3 < 301 &&
+                vibration_level_3 > -301)
+                &&
+                (vibration_level_1 > 61 ||
+                vibration_level_1 < -61)
+            ))
+        )
+    then
+        modify($part) {
+            setQuality_class("C")
+        }
+end

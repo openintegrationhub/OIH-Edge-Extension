@@ -2,6 +2,12 @@ version: "3.8"
 services:
   anonymizer:
     build: .
+    container_name: ${CONNAME}
+    environment:
+        path_name: "${PATHNAME}"
+    network_mode:
+        host
     volumes:
-      - ./configs/config.json:/app/configs/config.json
-      - ./configs/logging.yml/:/app/configs/logging.yml
+      - ./logs/:/app/logs/
+      - ./config/:/app/config/
+      - ./../../component_base_class/component_base_class.py:/app/component_base_class/component_base_class.py

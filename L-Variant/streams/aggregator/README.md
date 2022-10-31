@@ -1,4 +1,4 @@
-[Go back](../../README.md#components)
+[Go back](../../README.md)
 
 # Aggregator-Stream
 
@@ -10,19 +10,24 @@ The Aggregator component is compatible with the pandas package and accepts every
 Configuration can be supplied by filling out required fields in config.json file as seen below. 
 
 ```
-config= {
-   'source_topic':'stream_agg_source',
-   'aggregated_topic':'stream_agg_sink',
-   'faust_config':{
-         'web_port'='',
-         'id': '',
-         'broker': '')
-   },
-   'sensor_config': {
-         'default': {"method": 'mean',
-               "window_size": '5s'},
-         'sensor2': {"method": 'mean',
-               "window_size": '5s'}}
+config = {
+	"source_topic": "kafka_stream_component_agg_source",
+	"aggregated_topic": "kafka_source_component_agg_sink",
+	"faust_config": {
+		"id": "agg_test",
+		"broker": "kafka://localhost:19092",
+		"port": 6067
+	},
+	"sensor_config": {
+		"default": {
+			"method": "mean",
+			"window_size": "5s"
+		},
+		"sensor01": {
+			"method": "median",
+			"window_size": "5s"
+		}
+	}
 }
 ```
 
@@ -34,11 +39,10 @@ Describe how the component can be deployed like seen below
 3. build and run the Docker container with the following commands:
    - **docker-compose build**
    - **docker-compose run aggregator**
-
+  
 To stop the containers use:
 > - **docker-compose stop**
 >
 > or
 > - **docker-compose down** (deletes the containers after stopping)
   
-

@@ -2,8 +2,13 @@ version: "3"
 services:
   mongodb:
     build: .
+    container_name: ${CONNAME}
     network_mode:
       host
     volumes:
       - ./logs/:/mongodb/logs/
       - ./config/:/mongodb/config/
+      - ./../../component_base_class/component_base_class.py:/mongodb/component_base_class/component_base_class.py
+    environment:
+      path_name: ${PATHNAME}
+

@@ -2,8 +2,13 @@ version: "3"
 services:
   webhook:
     build: .
+    container_name: ${CONNAME}
     network_mode:
       host
     volumes:
       - ./logs/:/webhook/logs/
       - ./config/:/webhook/config/
+      - ./../../component_base_class/component_base_class.py:/webhook/component_base_class/component_base_class.py
+    environment:
+        path_name: "${PATHNAME}"
+

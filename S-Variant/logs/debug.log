@@ -1,2 +1,8 @@
 2021-11-18 14:21:49,064 - INFO - Connector.py - run - DemoConnector started
 2021-11-18 14:28:39,841 - INFO - Connector.py - run - DemoConnector stopped
+2022-02-07 10:53:20,696 - INFO - connector.py - run - DemoConnector started
+2022-02-07 10:53:20,697 - DEBUG - connectionpool.py - _new_conn - Starting new HTTP connection (1): influxdb:8086
+2022-02-07 10:53:20,742 - DEBUG - connectionpool.py - _make_request - http://influxdb:8086 "POST /query?q=CREATE+DATABASE+%22zuPro%22 HTTP/1.1" 200 None
+2022-02-07 10:53:20,760 - INFO - influx_db_connector.py - connect_to_influx - Connected to Influx-Server
+2022-02-07 10:53:20,777 - INFO - edge_orchestrator.py - error_and_info_checker - Connected to Influx-Server
+2022-02-07 10:53:32,622 - INFO - connector.py - run - DemoConnector stopped

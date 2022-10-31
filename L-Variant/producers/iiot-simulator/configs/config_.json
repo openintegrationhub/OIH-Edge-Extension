@@ -1,0 +1,13 @@
+{
+	"bootstrap_servers": "localhost:9092",
+	"topic": "kafka_source_component_test",
+	"key": "kafka_source_csv",
+	"simulator_config":{
+        "type":"csv",
+        "interval" : 0,
+        "timestamp": "auto",
+        "csv_config":{
+			"sep":";",
+			"header":0,
+			"usecols":["ID","Sensor1"]}
+		}}

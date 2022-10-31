@@ -1,4 +1,4 @@
-[Go back](../../README.md#components)
+[Go back](../../README.md)
 
 # Webhook-Consumer
 
@@ -13,7 +13,7 @@ Configuration can be supplied by filling out required fields in config.json file
 {
    "name": "webhook_consumer",
    "kafka_broker": "localhost:9092",
-   "source_topic": "opcua",
+   "source_topic": "kafka_sink_component_test",
    "webhook_url": "https://webhook.site/test"
 }
 ```
@@ -26,11 +26,10 @@ Describe how the component can be deployed like seen below
 3. build and run the Docker container with the following commands:
    - **docker-compose build**
    - **docker-compose run webhook**
-
+  
 To stop the containers use:
 > - **docker-compose stop**
 >
 > or
 > - **docker-compose down** (deletes the containers after stopping)
   
-

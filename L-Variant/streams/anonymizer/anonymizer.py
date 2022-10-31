@@ -7,85 +7,134 @@ Anonymizer Faust Stream of OIH-Edge Extension
 """
 
 import copy
-import json
+import re
+import signal
 from typing import Union
-import faust
+from warnings import filterwarnings
+
 import numpy as np
 import pandas as pd
-import log
+from component_base_class.component_base_class import ComponentBaseClass
+from pandas.errors import SettingWithCopyWarning
 
 
-
-class Anonymizer:
+class Anonymizer(ComponentBaseClass):
     """
     This class is used to anonymize a given data stream
     """
 
-    def __init__(self, config: dict):
-        self.config = config
-        self.sensor_config = None
-        self.ano_methods = ['thresholder', 'skip_n', 'hider', 'randomizer',
-                            'categorizer']
-        self._source_topic = self.config['source_topic']
-        self._ann_topic = self.config['ann_topic']
-        self.config = self.config['sensor_config']
+    def __init__(self):
+        try:
+            super().__init__()
+        except Exception as error:
+            print(f'Failure in Base Class, {error}')
+            return
+        filterwarnings('ignore', category=SettingWithCopyWarning)
+        self.logger = self.get_logger()
+        config_template = {
+            "source_topic": "",
+            "anom_topic": "",
+            "faust_config": "",
+            "sensor_config": ""
+        }
+        self.ano_methods = {
+            'thresholder': self.thresholder,
+            'skip_n': self.skip_n,
+            'hider': self.hider,
+            'randomizer': self.randomizer,
+            'categorizer': self.categorizer
+        }
+        self.unprocessed_messages = 0
+        self._source_topic = ''
+        self._ann_topic = ''
+        self.sensor_config = {}
+        self.app_config = {}
         self.iter_data = {}
         self.ret_data = {}
+        self.config = {}
         self.error = None
         self.info = None
+        self.app = None
         self.wait = True
+        self.load_config(config_template)
+        if self.app and not self.terminated:
+            self.app.main()
 
-    @staticmethod
-    def create_app(config: dict):
-        """Create and configure a Faust based kafka-aggregator application.
-        Parameters
-        ----------
-        config : `Configuration`, optional
-            The configuration to use.  If not provided, the default
-            :ref:`Configuration` will be used.
+    def load_config(self, config_template: dict = None, source: str = 'file'):
+        """ Loads the config for the component, either from env variables
+        or from a file.
+
+        :param config_template: dict with all required fields for the
+        component to work.
+        :param source: source of the config, either file or env
+        :return: None
         """
-
-        log.logging.info("Kafka Broker is", config['broker'])
-        app = faust.App(
-            web_port=config["web_port"],
-            id=config['id'],
-            broker=config['broker'])
-        return app
+        if source != 'file':
+            conf = self.get_config(
+                config_template,
+                source=source,
+                file_path=f'/config/{self.path_name}'
+            )
+        else:
+            conf = self.wait_for_config_insertion()
+        self.config = conf
+        try:
+            if self.config and all(keys in self.config
+                                   for keys in config_template):
+                self.app_config = self.config['faust_config']
+                if self._source_topic != self.config['source_topic'] \
+                        or self._ann_topic != self.config['anom_topic']:
+                    self._source_topic = self.config['source_topic']
+                    self._ann_topic = self.config['anom_topic']
+                    self.app = self.create_app(self.app_config)
+                    self.create_agent(self._source_topic,
+                                      self._ann_topic,
+                                      self.app,
+                                      self._process)
+            else:
+                self.logger.error('Missing key(s) in config')
+                print('Missing key(s) in config', flush=True)
+                self.terminated = True
+                return
+        except ModuleNotFoundError as mod_err:
+            self.logger.error(f'Invalid Kafka broker url: {mod_err}')
+            print('Invalid kafka broker url', flush=True)
+            self.terminated = True
+        except Exception as error:
+            self.logger.error(f'Error: {error} in load_config')
+            self.terminated = True
 
     def synchron(self, data: list, sensor: str):
-        """
-        This function is used when the sensor method is None.
-        The data will not be cached, but forwarded synchronously without any
-        anonymization.
-        Parameters
-        ----------
-        data : list
-            the list consists of dictionaries with a timestamp and a value
-            e.g.
-            {'timestamp': '2020-06-20T16:12:54', 'value': '34534,345'}.
-        sensor : string
-            Name of the sensor.
+        """ Data will not be cached, but forwarded synchronously without any
+        aggregation.
 
-        Returns
-        -------
-        None.
+        :param data: (list) stored data which consists of dicts
+        :param sensor: name of the sensor
+        :return: None
         """
         self.wait = False
         self.iter_data['data'][sensor] = []
         self.ret_data['data'][sensor] = data
 
     def hider(self, data: list, sensor: str):
+        """ Data will be cleared of the given sensor.
+
+        :param data: (list) stored data which consists of dicts
+        :param sensor: name of the sensor
+        :return: None
         """
-        This function is used to hide certain fields.
-        """
+        self.wait = False
         self.iter_data['data'][sensor] = []
 
     def thresholder(self, data: list, sensor: str):
-        """
-        This function replaces every value which is outside a certain threshold
-        with a substitute depending of the value being smaller than the left
-        hand side of the threshold or being bigger than the right hand side of
-        the threshold.
+        """ Replaces every value which is outside a certain threshold of the
+        given data and substitutes depending on the value being smaller than
+        the left hand side of the threshold or being bigger than the right
+        hand side of the threshold.
+
+        :param data: (list) stored data which consists of dicts
+        :param sensor: name of the sensor
+        :return: None
         """
         try:
             if len(data) >= self.sensor_config['window']:
@@ -93,8 +142,10 @@ class Anonymizer:
                 (low_ts, up_ts) = self.sensor_config['threshold']
                 (low_sub, up_sub) = self.sensor_config['substitution']
                 self.wait = False
-                modulo = self._calc_modulo(len(data),
-                                           self.sensor_config['window'])
+                modulo = self._calc_modulo(
+                    len(data),
+                    self.sensor_config['window']
+                )
 
                 if modulo != 0:
                     # This is the dataset which will be aggregated.
@@ -107,8 +158,11 @@ class Anonymizer:
                     ann_data = pd.DataFrame(data[:])
                     self.iter_data['data'][sensor] = []
 
-                ann_data = np.array_split(ann_data, len(ann_data)
-                                          / self.sensor_config['window'])
+                ann_data['value'] = ann_data['value'].astype(dtype=float)
+                ann_data = np.array_split(
+                    ann_data.dropna(),
+                    len(ann_data) / self.sensor_config['window']
+                )
 
                 for ann in ann_data:
                     ann['value'][ann['value'] > up_ts] = up_sub
@@ -117,17 +171,24 @@ class Anonymizer:
 
                     self.ret_data['data'][sensor].extend(
                         ann.to_dict(orient='records')[:])
-        except Exception as error:
-            self.error = str(self.__class__) + ": " + str(error)
+        except KeyError as key_err:
+            self.logger.error('Invalid Configuration in thresholder')
+            raise ValueError('Invalid Configuration') from key_err
 
     def skip_n(self, data: list, sensor: str):
-        """
-        This function only shows every n-th element.
+        """ Skip every n-th element of the given data.
+
+        :param data: (list) stored data which consists of dicts
+        :param sensor: name of the sensor
+        :return: None
         """
         try:
             if len(data) >= self.sensor_config['N']:
                 self.wait = False
-                modulo = self._calc_modulo(len(data), self.sensor_config['N'])
+                modulo = self._calc_modulo(
+                    len(data),
+                    self.sensor_config['N']
+                )
 
                 if modulo != 0:
                     # This is the dataset which will be aggregated.
@@ -140,26 +201,34 @@ class Anonymizer:
                     ann_data = pd.DataFrame(data[:])
                     self.iter_data['data'][sensor] = []
 
-                ann_data = np.array_split(ann_data, len(ann_data)
-                                          / self.sensor_config['N'])
+                ann_data = np.array_split(
+                    ann_data,
+                    len(ann_data) / self.sensor_config['N']
+                )
 
                 self.ret_data['data'][sensor] = [
                     {'timestamp': pd.DataFrame(ann)['timestamp'].iloc[-1],
                      'value': pd.DataFrame(ann)['value'].iloc[-1]}
                     for ann in ann_data]
-        except Exception as error:
-            self.error = str(self.__class__) + ": " + str(error)
+        except KeyError as key_err:
+            self.logger.error('Invalid Configuration in skip_n')
+            raise ValueError('Invalid Configuration') from key_err
 
     def randomizer(self, data: list, sensor: str):
-        """
-        This function adds a random value onto the given data.
+        """ Add random values onto the given data.
+
+        :param data: (list) stored data which consists of dicts
+        :param sensor: name of the sensor
+        :return: None
         """
         try:
             if len(data) >= self.sensor_config['window']:
 
                 self.wait = False
-                modulo = self._calc_modulo(len(data),
-                                           self.sensor_config['window'])
+                modulo = self._calc_modulo(
+                    len(data),
+                    self.sensor_config['window']
+                )
 
                 if modulo != 0:
                     # This is the dataset which will be aggregated.
@@ -171,8 +240,10 @@ class Anonymizer:
                     ann_data = pd.DataFrame(data[:])
                     self.iter_data['data'][sensor] = []
 
-                ann_data = np.array_split(ann_data, len(ann_data)
-                                          / self.sensor_config['window'])
+                ann_data['value'] = ann_data['value'].astype(dtype=float)
+                ann_data = np.array_split(
+                    ann_data.dropna(),
+                    len(ann_data) / self.sensor_config['window'])
 
                 if self.sensor_config['distribution']['name'] == 'random':
                     range_left, range_right \
@@ -182,24 +253,33 @@ class Anonymizer:
                             range_left, range_right, ann.shape[0])
                         self.ret_data['data'][sensor].extend(
                             ann.to_dict(orient='records')[:])
-
-        except Exception as error:
-            self.error = str(self.__class__) + ": " + str(error)
+        except KeyError as key_err:
+            self.logger.error('Invalid configuration in randomizer')
+            raise ValueError('Invalid Configuration') from key_err
 
     def categorizer(self, data: list, sensor: str):
-        """
-        This function categorizes the given Data into certain labels.
+        """ Categorizes the given Data into certain labels.
         e.g.
         'cats': [10,20,30]
         'lables' [1,2]
         Every value < 20 gets categorized into the field 1 and every
         value > 20 get categorized into the field 2
+
+        :param data: (list) stored data which consists of dicts
+        :param sensor: name of the sensor
+        :return: None
         """
         try:
             self.wait = False
             self.iter_data['data'][sensor] = []
 
-            df_data = pd.DataFrame(data)
+            df_data = pd.DataFrame(data).dropna()
+            df_data['value'] = df_data['value'].astype(dtype=float)
+
+            df_data['value'][df_data['value'] <= self.sensor_config[
+                'cats'][0]] = self.sensor_config['cats'][1]
+            df_data['value'][df_data['value'] > self.sensor_config[
+                'cats'][-1]] = self.sensor_config['cats'][-1]
 
             if isinstance(self.sensor_config['cats'], list):
                 df_data['value'] = pd.cut(df_data['value'],
@@ -217,61 +297,34 @@ class Anonymizer:
             self.ret_data['data'][sensor].extend(df_data.to_dict(
                 orient='records')[:])
             del df_data
-        except Exception as error:
-            self.error = str(self.__class__) + ": " + str(error)
+        except KeyError as key_err:
+            self.logger.error('Invalid configuration in categorizer')
+            raise ValueError('Invalid Configuration') from key_err
 
-    def _calc_modulo(self, data_size: int, window_size: int):
-        """
-        Doc TO-DO
+    @staticmethod
+    def _calc_modulo(data_size: int, window_size: int) -> int:
+        """ Calculate the modulo of the given data.
 
-        Parameters
-        ----------
-        data_size : int
-            DESCRIPTION.
-        window_size : int
-            DESCRIPTION.
-
-        Returns
-        -------
-        mod : TYPE
-            DESCRIPTION.
-
+        :param data_size: (int) stored data size
+        :param window_size:
+        :return: mod
         """
         mod = data_size % window_size
         return mod
 
     def _clean_ret_data(self):
+        """ Clear the return data.
+
+        :return: None
+        """
         for sensor in self.ret_data['data']:
             self.ret_data['data'][sensor].clear()
 
-    def _call_anom_method(self, sensor: str):
-        if self.sensor_config['name'] is None:
-            self.synchron(self.iter_data['data'][sensor], sensor)
-        elif self.sensor_config['name'] == 'hider':
-            self.hider(self.iter_data['data'][sensor], sensor)
-        elif self.sensor_config['name'] == 'categorizer':
-            self.categorizer(self.iter_data['data'][sensor], sensor)
-        elif self.sensor_config['name'] == 'thresholder':
-            self.thresholder(self.iter_data['data'][sensor], sensor)
-        elif self.sensor_config['name'] == 'skip_n':
-            self.skip_n(self.iter_data['data'][sensor], sensor)
-        elif self.sensor_config['name'] == 'randomizer':
-            self.randomizer(self.iter_data['data'][sensor], sensor)
-
     def _process(self, data: dict) -> Union[dict, None]:
-        """
-        Doc TO-DO
+        """ Processes incoming data stream
 
-        Parameters
-        ----------
-        data : TYPE
-            DESCRIPTION.
-
-        Returns
-        -------
-        TYPE
-            DESCRIPTION.
-
+        :param data: (dict) unprocessed data
+        :return: (dict) processed data
         """
         try:
             if len(self.ret_data) == 0:
@@ -280,58 +333,54 @@ class Anonymizer:
             else:
                 self._clean_ret_data()
 
-            # If iter_data is not empty, than extend the sensor values with the
+            # If iter_data is not empty, then extend the sensor values with the
             # incoming data.
             if len(self.iter_data) == 0:
                 self.iter_data = copy.deepcopy(data)
             else:
-                for sensor in self.iter_data['data']:
-                    self.iter_data['data'][sensor].extend(data['data'][sensor])
+                for sensor in data['data']:
+                    if sensor in self.iter_data['data']:
+                        self.iter_data['data'][sensor].extend(
+                            data['data'][sensor])
+                    else:
+                        self.iter_data['data'][sensor] = data['data'][sensor]
+                        self.ret_data['data'][sensor] = []
 
-            for sensor in self.iter_data['data']:
-                if sensor in self.config:
-                    self.sensor_config = self.config[sensor]
+            for sensor in data['data']:
+                if sensor in self.config['sensor_config']:
+                    self.sensor_config = self.config['sensor_config'][sensor]
                 else:
-                    self.sensor_config = self.config['default']
+                    self.sensor_config = self.config['sensor_config'][
+                        'default']
 
                 if self.sensor_config['name'] not in self.ano_methods:
                     raise ValueError(f"Anoynmization method "
                                      f"{self.sensor_config['name']} is not "
                                      f"known")
-
-                self._call_anom_method(sensor)
+                self.ano_methods[self.sensor_config['name']](
+                    self.iter_data['data'][sensor],
+                    sensor
+                )
+        except KeyError as key_err:
+            self.unprocessed_messages += 1
+            self.logger.warning(f'Invalid message format.'
+                                f'Unprocessed messages: '
+                                f'{self.unprocessed_messages}')
+            self.logger.error(key_err)
+        except ValueError as val_err:
+            if re.match('Anonymization method .* is not known', str(val_err)):
+                self.logger.error(f'Invalid anonymization method: {val_err}')
+            elif str(val_err) != 'Invalid Configuration':
+                self.logger.error(f'ValError: {val_err} in process')
+            signal.raise_signal(signal.SIGTERM)
         except Exception as error:
-            self.error = str(self.__class__) + ": " + str(error)
-            print("Error:", self.error)
+            self.logger.error(f'Error: {error} in process')
+            signal.raise_signal(signal.SIGTERM)
 
         if not self.wait:
             self.wait = True
             return self.ret_data
-        return None
-
-    def process(self, app: faust.App):
-        """
-        :param app: Faust app.
-        """
-        source_topic = app.topic(self._source_topic)
-        ann_topic = app.topic(self._ann_topic)
-        log.logging.info("Source Topic", source_topic)
-
-        @app.agent(source_topic)
-        async def stream_anonymize(stream):
-            """Process incoming events from the source topics."""
-            async for event in stream:
-                res = self._process(event)
-                if res:
-                    await ann_topic.send(value=res)
 
 
 if __name__ == '__main__':
-    MODE_PATH = r"./configs/config.json"
-    with open(MODE_PATH) as json_file:
-        config = json.load(json_file)
-        json_file.close()
-    Ann = Anonymizer(config)
-    app = Ann.create_app(config['faust_config'])
-    Ann.process(app)
-    app.main()
+    ann = Anonymizer()

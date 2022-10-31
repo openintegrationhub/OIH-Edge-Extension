@@ -30,4 +30,4 @@ COPY configs/logging.yml /app/configs/logging.yml
 HEALTHCHECK --interval=10s --timeout=10s --start-period=30s --retries=3 \
     CMD pidof python3 || exit 1
 
-CMD ["python3", "iiot-simulator.py"]
+CMD ["python3", "iiotsimulator.py"]

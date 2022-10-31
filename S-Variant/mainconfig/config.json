@@ -20,10 +20,18 @@
                              "period":0.1
                              }
                  },
-              {
-      "name": "webhookconnector",
-      "config": {
-          "url": "https://webhook.site/7693fe59-265d-4626-9ba1-0a9c81d59855"
-      }}
+              	{
+		"name": "influxdbconnector",
+            "config": {
+                "host": "influxdb",
+                "port": "8086",
+                "db": "zuPro",
+				"mapper":"zuPro",
+                "measurement": "raw_data",
+                "username": "admin",
+                "password": "admin"
+			}
+		}
+	
             ]
         }

@@ -1,0 +1,18 @@
+{
+   	"name": "mqtt_producer",
+   	"kafka_broker": "localhost:19092",
+	"sink_topic": "kafka_source_component_test",
+ 	"mqtt_broker": "broker.mqtt-example.com",
+   	"mqtt_port": 8000,
+   	"deviceid":"clientId-mqttid",
+   	"security": {
+   	},
+   	"mqtt_topics": "testtopic/value",
+   	"mapping": [{
+      "topicName": "account/1994",
+      "converter": {
+          "type": "linemetrics",
+          "filter": {
+          }
+  }]
+}

@@ -2,8 +2,12 @@ version: "3"
 services:
   influx:
     build: .
+    container_name: ${CONNAME}
     network_mode:
       host
     volumes:
       - ./logs/:/influx/logs/
       - ./config/:/influx/config/
+      - ./../../component_base_class/component_base_class.py:/influx/component_base_class/component_base_class.py
+    environment:
+        path_name: ${PATHNAME}

@@ -1,0 +1,27 @@
+{
+	"payperuse_config": {
+		"source_topic": "kafka_stream_component_ppu_source",
+		"aggregated_topic": "kafka_source_component_ppu_sink",
+		"window_size": 5,
+		"node_sets": [
+			[
+				"sensor01",
+				"sensor02"
+			],
+			[
+				"sensor03",
+				"sensor04"
+			]
+		],
+		"price_per_consumption": 0.145,
+		"price_per_unit": 0.1,
+		"risk_costs": 200,
+		"fix_costs": 0.5,
+		"minimum_acceptance": 200
+	},
+	"faustapp_config": {
+		"id": "payperuse5",
+		"broker": "kafka://localhost:9092",
+		"port": 6068
+	}
+}

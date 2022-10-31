@@ -1,0 +1,20 @@
+package com.myspace.vibrations;
+
+no-loop
+
+rule 'Machine-Three-Class-A-Check'
+    salience 7
+    when
+        $part: Part(
+            machine_id == "3" && 
+            vibration_level_1 < 201 && 
+            vibration_level_1 > -201 && 
+            vibration_level_2 < 401 && 
+            vibration_level_2 > -401 &&
+            vibration_level_3 < 361 && 
+            vibration_level_3 > -361) 
+    then
+        modify($part) {
+            setQuality_class("A")
+        }
+end

@@ -1,0 +1,1513 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "L-Variante API",
+    "description": "The API for the L-Variante kafka project",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://virtserver.swaggerhub.com/MARCELLOGRAFFIGNA/L-Variante/1.0.0",
+      "description": "SwaggerHub API Auto Mocking"
+    }
+  ],
+  "paths": {
+    "/producers/": {
+      "get": {
+        "tags": [
+          "Producers"
+        ],
+        "description": "returns all running producers",
+        "operationId": "getProducers",
+        "responses": {
+          "200": {
+            "description": "All the producers",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "JSON",
+                    "example": "{\"id\":1,\"name\":\"producer-name_1\",\"timestamp\":\"2022-07-21T07:50:29+00:00\"}"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Producers"
+        ],
+        "parameters": [
+          {
+            "name": "type",
+            "in": "query",
+            "required": true,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Create Producer",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "example": {
+                    "container": "container_name",
+                    "container_id": 1,
+                    "status": "running"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/producers/{id}": {
+      "get": {
+        "tags": [
+          "Producers"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "minItems": 1,
+              "type": "array",
+              "items": {
+                "type": "integer"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Producer Details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "example": {
+                    "id": 1,
+                    "name": "container_name",
+                    "network": "",
+                    "started": "2022-07-21T07:50:29+00:00",
+                    "status": "running"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Producers"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "minItems": 1,
+              "type": "array",
+              "items": {
+                "type": "integer"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully deleted producer"
+          }
+        }
+      }
+    },
+    "/producers/{id}/start": {
+      "post": {
+        "tags": [
+          "Producers"
+        ],
+        "operationId": "start-producer",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "minItems": 1,
+              "type": "array",
+              "items": {
+                "type": "integer"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully started producer",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "example": {
+                    "container": "container_name",
+                    "container_id": 1,
+                    "status": "running"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/producers/{id}/stop": {
+      "post": {
+        "tags": [
+          "Producers"
+        ],
+        "operationId": "stop-producer",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "minItems": 1,
+              "type": "array",
+              "items": {
+                "type": "integer"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully stopped producer",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "example": {
+                    "container": "container_name",
+                    "container_id": 1,
+                    "status": "exited"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/producers/{id}/config": {
+      "post": {
+        "tags": [
+          "Producers"
+        ],
+        "operationId": "update-producer-config",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "minItems": 1,
+              "type": "array",
+              "items": {
+                "type": "integer"
+              }
+            }
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/opcua-config"
+        },
+        "responses": {
+          "200": {
+            "description": "successfully updated producer",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "mqttexample": {
+                    "$ref": "#/components/examples/opcua-config"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/consumers/": {
+      "get": {
+        "tags": [
+          "Consumers"
+        ],
+        "description": "returns all running producers",
+        "operationId": "getConsumers",
+        "responses": {
+          "200": {
+            "description": "All the consumers",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "JSON",
+                    "example": "{\"id\":1,\"name\":\"influx\",\"timestamp\":\"2022-07-21T07:50:29+00:00\"}"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Consumers"
+        ],
+        "operationId": "create-consumer",
+        "parameters": [
+          {
+            "name": "type",
+            "in": "query",
+            "required": true,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Create Consumer",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "example": {
+                    "container": "container_name",
+                    "container_id": 1,
+                    "status": "running"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/consumers/{id}/start": {
+      "post": {
+        "tags": [
+          "Consumers"
+        ],
+        "operationId": "start-consumer",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "minItems": 1,
+              "type": "array",
+              "items": {
+                "type": "integer"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully started consumer",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "example": {
+                    "container": "container_name",
+                    "container_id": 1,
+                    "status": "running"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/consumers/{id}/stop": {
+      "post": {
+        "tags": [
+          "Consumers"
+        ],
+        "operationId": "stop-consumer",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "minItems": 1,
+              "type": "array",
+              "items": {
+                "type": "integer"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully stopped consumer",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "example": {
+                    "container": "container_name",
+                    "container_id": 1,
+                    "status": "exited"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/consumers/{id}/config": {
+      "post": {
+        "tags": [
+          "Consumers"
+        ],
+        "operationId": "update-consumer",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "minItems": 1,
+              "type": "array",
+              "items": {
+                "type": "integer"
+              }
+            }
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/influx-config"
+        },
+        "responses": {
+          "200": {
+            "description": "successfully updated consumer",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "mqttexample": {
+                    "$ref": "#/components/examples/influx-config"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/consumers/{id}": {
+      "get": {
+        "tags": [
+          "Consumers"
+        ],
+        "operationId": "retrieve-consumer",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "minItems": 1,
+              "type": "array",
+              "items": {
+                "type": "integer"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully retrieved consumer",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "example": {
+                    "id": 1,
+                    "name": "container_name",
+                    "network": "",
+                    "started": "2022-07-21T07:50:29+00:00",
+                    "status": "running"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Consumers"
+        ],
+        "operationId": "delete-consumer",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "minItems": 1,
+              "type": "array",
+              "items": {
+                "type": "integer"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully deleted consumer"
+          }
+        }
+      }
+    },
+    "/streams/": {
+      "get": {
+        "tags": [
+          "Streams"
+        ],
+        "description": "returns all running streams",
+        "operationId": "getStreams",
+        "responses": {
+          "200": {
+            "description": "All the streams",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "JSON",
+                    "example": "{\"id\":1,\"name\":\"data-logic-manager\",\"timestamp\":\"2022-07-21T07:50:29+00:00\"}"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Streams"
+        ],
+        "operationId": "register-stream",
+        "parameters": [
+          {
+            "name": "type",
+            "in": "query",
+            "required": true,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Create Producer",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "example": {
+                    "container": "container_name",
+                    "container_id": 1,
+                    "status": "running"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/streams/{id}/start": {
+      "post": {
+        "tags": [
+          "Streams"
+        ],
+        "operationId": "start-aggregator",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "minItems": 1,
+              "type": "array",
+              "items": {
+                "type": "integer"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully started tream",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "example": {
+                    "container": "container_name",
+                    "container_id": 1,
+                    "status": "running"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/streams/{id}/stop": {
+      "post": {
+        "tags": [
+          "Streams"
+        ],
+        "operationId": "stop-aggregator",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "minItems": 1,
+              "type": "array",
+              "items": {
+                "type": "integer"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully stopped stream",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "example": {
+                    "container": "container_name",
+                    "container_id": 1,
+                    "status": "exit"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/streams/{id}/config": {
+      "post": {
+        "tags": [
+          "Streams"
+        ],
+        "operationId": "update-aggregator",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "minItems": 1,
+              "type": "array",
+              "items": {
+                "type": "integer"
+              }
+            }
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/payperuse-config"
+        },
+        "responses": {
+          "200": {
+            "description": "successfully updated stream",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "mqttexample": {
+                    "$ref": "#/components/examples/payperuse-config"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/streams/{id}": {
+      "get": {
+        "tags": [
+          "Streams"
+        ],
+        "operationId": "retrieve-stream",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "minItems": 1,
+              "type": "array",
+              "items": {
+                "type": "integer"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully retrieved stream",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "example": {
+                    "id": 1,
+                    "name": "container_name",
+                    "network": "",
+                    "started": "2022-07-21T07:50:29+00:00",
+                    "status": "running"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Streams"
+        ],
+        "operationId": "delete-stream",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "minItems": 1,
+              "type": "array",
+              "items": {
+                "type": "integer"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully deleted stream"
+          }
+        }
+      }
+    },
+    "/kafka_cluster/": {
+      "get": {
+        "tags": [
+          "Kafka Cluster"
+        ],
+        "operationId": "get-cluster",
+        "parameters": [
+          {
+            "name": "services",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully retrieved cluster",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Kafka Cluster"
+        ],
+        "operationId": "create-cluster",
+        "parameters": [
+          {
+            "name": "services",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully created cluster/service",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/kafka_cluster/start": {
+      "post": {
+        "tags": [
+          "Kafka Cluster"
+        ],
+        "operationId": "start-cluster",
+        "parameters": [
+          {
+            "name": "services",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully started cluster/service",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/kafka_cluster/stop": {
+      "post": {
+        "tags": [
+          "Kafka Cluster"
+        ],
+        "operationId": "stop-cluster",
+        "parameters": [
+          {
+            "name": "services",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully stopped cluster/service",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/kafka_cluster/pause": {
+      "post": {
+        "tags": [
+          "Kafka Cluster"
+        ],
+        "operationId": "pause-cluster",
+        "parameters": [
+          {
+            "name": "services",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully paused cluster/service",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/kafka_cluster/unpause": {
+      "post": {
+        "tags": [
+          "Kafka Cluster"
+        ],
+        "operationId": "Unpause-cluster",
+        "parameters": [
+          {
+            "name": "services",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully unpaused cluster/service",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/kafka_cluster/restart": {
+      "post": {
+        "tags": [
+          "Kafka Cluster"
+        ],
+        "operationId": "restart-cluster",
+        "parameters": [
+          {
+            "name": "services",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully restarted cluster/service",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/kafka_cluster/down": {
+      "delete": {
+        "tags": [
+          "Kafka Cluster"
+        ],
+        "operationId": "delete-cluster",
+        "parameters": [
+          {
+            "name": "services",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully deleted cluster/service",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/kafka_cluster/remove": {
+      "delete": {
+        "tags": [
+          "Kafka Cluster"
+        ],
+        "operationId": "remove-cluster",
+        "parameters": [
+          {
+            "name": "services",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully remvoed exited cluster/service",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {},
+    "examples": {
+      "mqttexample": {
+        "value": {
+          "name": "mqtt_producer",
+          "kafka_broker": "localhost:9092",
+          "sink_topic": "mqtt",
+          "mqtt_broker": "hub-mqtt.linemetrics.com",
+          "mqtt_port": 18883,
+          "deviceid": "deviceid",
+          "security": {
+            "cert_file": "./certificates/hub-mqtt.linemetric .crt",
+            "username": "username",
+            "password": "password"
+          },
+          "mqtt_topics": "account/1994",
+          "mapping": [
+            {
+              "topicName": "account/1994",
+              "converter": {
+                "type": "linemetrics",
+                "filter": {
+                  "2c462d00063642d3a2cd712e27cfe967": {
+                    "title": "HQ Demo LoRa CO2 Sensor Office",
+                    "dataStreams": {
+                      "7fa504a3203c44cb9d832eef93a5b24b": {
+                        "title": "Online Status",
+                        "measurement": {
+                          "type": "",
+                          "unit": ""
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "mqttinfo": {
+        "value": {
+          "id": 1,
+          "name": "mqtt_1",
+          "mqtt_topic": "account/1994",
+          "sink_topic": "test-dlm-vibration-parts-raw-1",
+          "timestamp": "2022-07-21T07:50:29+00:00"
+        }
+      },
+      "modbus-config": {
+        "value": {
+          "name": "modbus_producer",
+          "kafka_broker": "localhost:19092",
+          "slaves": [
+            {
+              "host": "host.docker.internal",
+              "port": 5022,
+              "topic": "Temperature",
+              "method": "read_input",
+              "start_address": 0,
+              "count": 1,
+              "unit": 1
+            },
+            {
+              "host": "host.docker.internal",
+              "port": 5022,
+              "topic": "Pressure",
+              "method": "read_holding",
+              "start_address": 0,
+              "count": 1,
+              "unit": 1
+            }
+          ],
+          "timeout_attempts": 30
+        }
+      },
+      "opcua-config": {
+        "value": {
+          "name": "opcua_producer",
+          "kafka_broker": "localhost:9092",
+          "sink_topic": "kafka_source_component_test",
+          "opcua_host": "opc.tcp://host.docker.internal:53530/OPCUA/SimulationServer",
+          "security": {
+            "password": "user",
+            "username": "user"
+          },
+          "time_out": 200,
+          "mode": "subscription",
+          "node_ids": [
+            "ns=4;i=1004"
+          ],
+          "check_time": 2000,
+          "discovery": true,
+          "discovery_config": {
+            "to_ignore": [
+              "Views",
+              "Types",
+              "Server"
+            ],
+            "node_type": [
+              "BaseDataVariableType"
+            ]
+          }
+        }
+      },
+      "influx-config": {
+        "value": {
+          "name": "influx_consumer",
+          "kafka_broker": "localhost:19092",
+          "source_topic": "kafka_sink_component_test",
+          "influx_port": 8086,
+          "influx_host": "localhost",
+          "influx_db": "influx_consumer_database",
+          "influx_measurement": "influx_consumer_measurement",
+          "influx_username": "admin",
+          "influx_password": "admin"
+        }
+      },
+      "mongodb-config": {
+        "value": {
+          "name": "mongodb_consumer",
+          "kafka_broker": "localhost:9092",
+          "source_topic": "kafka_sink_component_test",
+          "mongodb_host": "localhost",
+          "mongodb_port": 27017,
+          "mongodb_username": "root",
+          "mongodb_password": "rootpassword",
+          "mongo_db": "mongodb_consumer_database",
+          "mongodb_collection": "mongodb_consumer_measurement",
+          "direct_connection": true
+        }
+      },
+      "webhook-config": {
+        "value": {
+          "name": "webhook-consumer",
+          "kafka_broker": "localhost:9092",
+          "source_topic": "kafka_sink_component_test",
+          "webhook_url": "https://webhook.site/test"
+        }
+      },
+      "aggregator-config": {
+        "value": {
+          "source_topic": "kafka_stream_component_agg_source",
+          "aggregated_topic": "kafka_stream_component_agg_sink",
+          "faust_config": {
+            "id": "agg_test",
+            "broker": "kafka://localhost:19092",
+            "port": 6067
+          },
+          "sensor_config": {
+            "default": {
+              "method": "mean",
+              "window_size": "5s"
+            },
+            "sensor01": {
+              "method": "mean",
+              "window_size": "5s"
+            }
+          }
+        }
+      },
+      "anonymizer-config": {
+        "value": {
+          "source_topic": "kafka_stream_component_anom_source",
+          "ann_topic": "kafka_stream_component_anom_sink",
+          "faust_config": {
+            "id": "anom_test",
+            "broker": "kafka://localhost:19092",
+            "port": 6066
+          },
+          "sensor_config": {
+            "default": {
+              "name": "skip_n",
+              "N": 10
+            },
+            "sensor01": {
+              "name": "hider"
+            }
+          }
+        }
+      },
+      "data-logic-manager-config": {
+        "value": {
+          "application_name": "drools-stream",
+          "broker:kafka": "//localhost:19092",
+          "kie_server": {
+            "host": "http://kie:8080",
+            "username": "kieserver",
+            "password": "kieserver1!",
+            "containers": [
+              {
+                "container_package": "com.myspace.vibrations",
+                "container_id": "Vibrations_1.0.0-SNAPSHOT",
+                "object": {
+                  "name": "Part",
+                  "fields": [
+                    "id",
+                    "machine_id",
+                    "vibration_level_1",
+                    "vibration_level_2",
+                    "vibration_level_3",
+                    "quality_class",
+                    "timestamp"
+                  ]
+                }
+              },
+              {
+                "container_package": "com.myspace.vibrations",
+                "container_id": "Vibrations_1.0.0-SNAPSHOT",
+                "object": {
+                  "name": "Part",
+                  "fields": [
+                    "id",
+                    "machine_id",
+                    "vibration_level_1",
+                    "vibration_level_2",
+                    "vibration_level_3",
+                    "quality_class",
+                    "timestamp"
+                  ]
+                }
+              },
+              {
+                "container_package": "com.myspace.vibrations",
+                "container_id": "Vibrations_1.0.0-SNAPSHOT",
+                "object": {
+                  "name": "Part",
+                  "fields": [
+                    "id",
+                    "machine_id",
+                    "vibration_level_1",
+                    "vibration_level_2",
+                    "vibration_level_3",
+                    "quality_class",
+                    "timestamp"
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "payperuse-config": {
+        "value": {
+          "payperuse_config": {
+            "source_topic": "kafka_stream_component_ppu_source",
+            "aggregated_topic": "kafka_stream_component_ppu_sink",
+            "window_size": 10,
+            "node_sets": [
+              [
+                "sensor01",
+                "sensor02"
+              ],
+              [
+                "sensor03",
+                "sensor04"
+              ]
+            ],
+            "price_per_consumption": 0.145,
+            "price_per_unit": 0.1,
+            "fix_costs": 0.5,
+            "risk_costs": 200,
+            "minimum_acceptance": 200
+          },
+          "faustapp_config": {
+            "id": "payperuse5",
+            "broker": "kafka://localhost:9092",
+            "port": 6068
+          }
+        }
+      },
+      "zoekeeper-config": {
+        "value": {
+          "image": "confluentinc/cp-zookeeper:6.2.0",
+          "hostname": "zookeeper",
+          "container_name": "zookeeper",
+          "ports": [
+            "2181:2181"
+          ],
+          "environment": {
+            "ZOOKEEPER_CLIENT_PORT": 2181,
+            "ZOOKEEPER_TICK_TIME": 2000
+          }
+        }
+      },
+      "broker-config": {
+        "value": {
+          "broker": {
+            "image": "confluentinc/cp-kafka:6.2.0",
+            "hostname": "broker",
+            "container_name": "broker",
+            "depends_on": [
+              "zookeeper"
+            ],
+            "ports": [
+              "29092:29092",
+              "9092:9092",
+              "9101:9101",
+              "19092:19092"
+            ],
+            "environment": {
+              "KAFKA_BROKER_ID": 1,
+              "KAFKA_ZOOKEEPER_CONNECT": "zookeeper:2181",
+              "KAFKA_LISTENER_SECURITY_PROTOCOL_MAP": "PLAINTEXT:PLAINTEXT,CONNECTIONS_FROM_HOST:PLAINTEXT  ,FAUST:PLAINTEXT",
+              "KAFKA_ADVERTISED_LISTENERS": "PLAINTEXT://broker:29092,CONNECTIONS_FROM_HOST://localhost  :9092,FAUST://localhost:19092",
+              "KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR": 1,
+              "KAFKA_TRANSACTION_STATE_LOG_MIN_ISR": 1,
+              "KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR": 1,
+              "KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS": 0,
+              "KAFKA_JMX_PORT": 9101,
+              "KAFKA_JMX_HOSTNAME": "localhost",
+              "TOPIC_AUTO_CREATE": "true",
+              "KAFKA_AUTO_CREATE_TOPICS_ENABLE": "true"
+            }
+          }
+        }
+      },
+      "kafka-ui-config": {
+        "value": {
+          "image": "provectuslabs/kafka-ui",
+          "hostname": "kafka-ui",
+          "container_name": "kafka-ui",
+          "depends_on": [
+            "broker",
+            "zookeeper"
+          ],
+          "ports": [
+            "8081:8080"
+          ],
+          "restart": "always",
+          "environment": {
+            "KAFKA_CLUSTERS_0_NAME": "Kafka-Cluster",
+            "KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS": "broker:29092",
+            "KAFKA_CLUSTERS_0_ZOOKEEPER": "zookeeper:2181"
+          }
+        }
+      }
+    },
+    "requestBodies": {
+      "mqttexample": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "mqttexample": {
+                "$ref": "#/components/examples/mqttexample"
+              }
+            }
+          }
+        }
+      },
+      "modbus-config": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "modbus-config": {
+                "$ref": "#/components/examples/modbus-config"
+              }
+            }
+          }
+        }
+      },
+      "opcua-config": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "opcua-config": {
+                "$ref": "#/components/examples/opcua-config"
+              }
+            }
+          }
+        }
+      },
+      "influx-config": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "influx-config": {
+                "$ref": "#/components/examples/influx-config"
+              }
+            }
+          }
+        }
+      },
+      "mongodb-config": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "mongodb-config": {
+                "$ref": "#/components/examples/mongodb-config"
+              }
+            }
+          }
+        }
+      },
+      "webhook-config": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "webhook-config": {
+                "$ref": "#/components/examples/webhook-config"
+              }
+            }
+          }
+        }
+      },
+      "aggregator-config": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "aggregator-config": {
+                "$ref": "#/components/examples/aggregator-config"
+              }
+            }
+          }
+        }
+      },
+      "anonymizer-config": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "anonymizer-config": {
+                "$ref": "#/components/examples/anonymizer-config"
+              }
+            }
+          }
+        }
+      },
+      "data-logic-manager-config": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "data-logic-manager-config": {
+                "$ref": "#/components/examples/data-logic-manager-config"
+              }
+            }
+          }
+        }
+      },
+      "payperuse-config": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "payperuse-config": {
+                "$ref": "#/components/examples/payperuse-config"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

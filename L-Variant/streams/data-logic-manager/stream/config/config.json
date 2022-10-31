@@ -1,0 +1,42 @@
+{
+    "application_name":"drools-stream",
+    "broker":"kafka://20.107.220.83:19092",
+    "kie_server": {
+        "host": "http://kie:8080",
+        "username": "kieserver",
+        "password": "kieserver1!",
+        "containers": [
+            {
+                "container_package": "com.myspace.vibrations",
+                "container_id": "Vibrations_1.0.0-SNAPSHOT",
+                "input_topic":"test-dlm-vibration-parts-raw-1",
+                "output_topic":"test-dlm-vibration-parts-sink",
+                "object": {
+                    "name": "Part",
+                    "fields": ["id", "machine_id", "vibration_level_1", "vibration_level_2", "vibration_level_3", "quality_class", "timestamp"]
+                }
+            },
+            {
+                "container_package": "com.myspace.vibrations",
+                "container_id": "Vibrations_1.0.0-SNAPSHOT",
+                "input_topic":"test-dlm-vibration-parts-raw-2",
+                "output_topic":"test-dlm-vibration-parts-sink",
+                "object": {
+                    "name": "Part",
+                    "fields": ["id", "machine_id", "vibration_level_1", "vibration_level_2", "vibration_level_3", "quality_class", "timestamp"]
+                }
+            },
+            {
+                "container_package": "com.myspace.vibrations",
+                "container_id": "Vibrations_1.0.0-SNAPSHOT",
+                "input_topic":"test-dlm-vibration-parts-raw-3",
+                "output_topic":"test-dlm-vibration-parts-sink",
+                "object": {
+                    "name": "Part",
+                    "fields": ["id", "machine_id", "vibration_level_1", "vibration_level_2", "vibration_level_3", "quality_class", "timestamp"]
+                }
+            }
+        ]
+        
+    }
+}

@@ -1,13 +1,28 @@
 {
-	"bootstrap_servers":"20.107.220.83:19092",
-	"topic" : "iiotsimdata",
-	"key": "iiotsim",
-	"period" : 60,
-	"interval": 1,
-		"sensors":{
-			"zk_spannung": [50,999],
-			"zk_strom": [10,240],
-			"wr_spannung": [30,555],
-			"wr_strom": [10,120]
+	"bootstrap_servers": "localhost:19092",
+	"topic": "kafka_source_component_test",
+	"key": "kafka_source_custom",
+	"simulator_config": {
+		"type": "custom",
+		"period": 10,
+		"interval": 1,
+		"sensors": {
+			"zk_spannung": [
+				50,
+				999
+			],
+			"zk_strom": [
+				10,
+				240
+			],
+			"wr_spannung": [
+				30,
+				555
+			],
+			"wr_strom": [
+				10,
+				120
+			]
 		}
-		}
+	}
+}

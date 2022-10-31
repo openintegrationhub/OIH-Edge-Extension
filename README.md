@@ -29,6 +29,5 @@ OIH platform. The OIH Edge Extension is available in two variants which are call
 - [Components](./L-Variant/README.md#components)
 - [Deployment](./L-Variant/README.md#deployment)
 - [Data format](./L-Variant/README.md#data-format)
-- [Test setup](./L-Variant/README.md#test-setup)
 - [Contribution](./L-Variant/README.md#contribution)
 

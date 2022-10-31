@@ -1,11 +1,12 @@
 {
 	"name": "mongodb_consumer",
    	"kafka_broker": "localhost:9092",
-   	"source_topic": "mqtt",
+   	"source_topic": "kafka_sink_component_test",
    	"mongodb_host": "localhost",
    	"mongodb_port": "27017",
 	"mongodb_username": "root",
 	"mongodb_password": "rootpassword",
-	"mongo_db": "mqtt",
-	"mongodb_collection": "linemetrics"
+	"mongo_db": "mongodb_consumer_database",
+	"mongodb_collection": "mongodb_consumer_collection",
+	"direct_connection": true
 }

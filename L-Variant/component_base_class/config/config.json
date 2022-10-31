@@ -1,0 +1,5 @@
+{
+  "kafka-broker": "localhost",
+  "source-topic": "test-topic",
+  "port": 3423
+}

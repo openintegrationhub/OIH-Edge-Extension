@@ -1,148 +1,225 @@
 # -*- coding: utf-8 -*-
 """
 Created on Wed Dec  2 13:59:20 2020
-
-@author: AUS
 """
+
+__author__ = 'TMO'
+
+import asyncio
 # EXAMPLE CONFIG
 # {
 #   "name": "opcua_producer",
 #   "kafka_broker": "",
 # 	"sink_topic": "opcua",
-# 	"opcua_url": "opc.tcp://192.168.10.51:4840",
+# 	"opcua_host": "opc.tcp://192.168.10.51:4840",
 # 	"security": {
 # 		"password": "user",
 # 		"username": "user"
 # 	},
-# 	"timeOut": 200,
-# 	"deviceid":"EMA-Tec",
-#   "mode": {
-#       "mode": "sub",
-#       "discovery": "True",
-#       "nodeids": ["ns=4;i=5001"], Je nach Mode kann man entweder die NodeId eines Sensors angeben oder eine Vater Node
-#                   von denen man die Kinder Nodes subscriben/pollen will. discPol/discSub: Für RootNode leer lassen
-#       "type": ["TagType"] #Default: "BaseDataVariableType",
-#       "toIgnore": ["Views", "Types", "Server"], Folders and Objects to be Ignored while browsing through the
-#                   Address Space
-#       "subCheckTime"/"pol_time": 100/5 Je nach Modus: "discPol" und subCheckTime in Mili für
-#                   "sub"/"discSub"/pol_time in Sek für "pol"
+# 	"time_out": 200,
+#   "mode": "subscription",
+#   "node_ids": [],
+#   "check_time": 2000,
+#   "discovery": true,
+#   "discovery_config: {
+#       "to_ignore": ["Views", "Type", "Server"],
+#       "node_type": ["BaseDataVariableType"]
 #   }
 # }
-import time
-import datetime
 import json
-import asyncio
 import logging
 import logging.handlers
-import threading
-
 from concurrent.futures import TimeoutError as FuturesTimeoutError
-from asyncua import ua, Client
+
+import asyncua
+from asyncua import Client
+from asyncua import Node
+from asyncua import ua
+from asyncua.ua.uaerrors import BadIdentityTokenRejected
+from asyncua.ua.uaerrors import BadNodeIdUnknown
+from asyncua.ua.uaerrors import BadNotSupported
+from component_base_class.component_base_class import ComponentBaseClass
 from kafka import KafkaProducer
 
 
-class OPCUAConnector:
+class OPCUAProducer(ComponentBaseClass):
+    """
+    This class serves as a Producer, which takes data from an OPCUA-Server
+    and writes them into a specified kafka topic.
+    """
+
     def __init__(self):
         """
-            Pull all data from the config file and initialize all major data variables to ensure
-            that the program runs without problems
-        :param config: dict as shown above
+        Constructor of the OPCUAProducer.
         """
+        config_template = {
+            "name": "",
+            "opcua_host": "",
+            "security": "",
+            "time_out": "",
+            "check_time": "",
+            "sink_topic": "",
+            "kafka_broker": "",
+            "mode": "",
+            "discovery": ""
+        }
         try:
             super().__init__()
-            # LOGGING-FORMATTER
-            loggingFormatter = logging.Formatter('%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s - %('
-                                                 'message)s')
-            # ERROR-HANDLER
-            errorhandler = logging.handlers.RotatingFileHandler('./logs/error.log', maxBytes=1024 * 1024 * 2,
-                                                                backupCount=9, delay=False)
-            errorhandler.setLevel(logging.WARNING)
-            errorhandler.setFormatter(loggingFormatter)
-            # DEBUG-HANDLER
-            debughandler = logging.handlers.RotatingFileHandler('./logs/debug.log', maxBytes=1024 * 1024 * 2,
-                                                                backupCount=9, delay=False)
-            debughandler.setLevel(logging.DEBUG)
-            debughandler.setFormatter(loggingFormatter)
-            # LOGGER
-            self.logger = logging.getLogger()
-            self.logger.setLevel(logging.DEBUG)
-            self.logger.addHandler(errorhandler)
-            self.logger.addHandler(debughandler)
-
-            mode_path = r"./config/config.json"
-            with open(mode_path) as json_file:
-                config = json.load(json_file)
-                json_file.close()
-            self.config = config
-            self.error = None
-            self.url = config['opcua_url']
-            self.client = None
-            if "username" and "password" in config['security']:
-                self.username = config['security']['username']
-                self.password = config['security']['password']
-            self.deviceid = config['deviceid']
-            self.timeOut = config['timeOut']
-            if "pol" == config['mode']['mode']:
-                self.pol_time = config['mode']['pol_time']
-                self.nodeids = config['mode']['nodeids']
-                if "True" == config['mode']['discovery']:
-                    if "type" in config['mode']:
-                        self.type = config['mode']['type']
-                    else:
-                        self.type = "BaseDataVariableType"
-            elif "sub" == config['mode']['mode']:
-                self.subCheckTime = config['mode']['subCheckTime']
-                self.nodeids = config['mode']['nodeids']
-                if "type" in config['mode']:
-                    self.type = config['mode']['type']
-                else:
-                    self.type = "BaseDataVariableType"
-            elif "methods" == config['mode']['mode']:
-                self.args = config['mode']['args']
-                self.nodeids = config['mode']['nodeids']
-            if "toIgnore" in config['mode']:
-                self.toIgnore = config['mode']['toIgnore']
-            if "kafka_broker" and "sink_topic" in config:
-                self.topic = config["sink_topic"]
-                self.producer = KafkaProducer(bootstrap_servers=[config["kafka_broker"]])
-        except Exception as error:
-            self.error = str(self.__class__) + ": " + str(error)
-            self.logger.error("Error: %s, in __init__", error)
-        self.data = {}
-        self.dict = {}
-        self.nodeCounter = 0
-        self.interest_nodes = []
-        self.gatherThreads = []
-        self.subscribed = False
+        except Exception:
+            print('failure in base class')
+            return
+        self.logger_config = {}
+        self.config = {}
+        self.logger = self.get_logger()
+        self.host = ''
+        self.username = ''
+        self.password = ''
+        self.topic = ''
+        self.kafka_broker = None
+        self.db_checker = None
+        self.producer = None
+        self.client = None
+        self.node_ids = []
+        self.to_ignore = []
+        self.node_type = []
+        self.time_out = 0
+        self.check_time = 0
         self.connected = False
+        self.subscribed = False
+        self.sub_nodes = []
+        self.sub_nodes_id = []
+        self.parent_id = {}
         self.sub = None
-        self.info = None
-        self.terminated = False
-        self.error = None
-        self.status = "start"
-        self.run()
+        self.sub_handle = None
+        self.load_config(config_template)
+        logging.getLogger('asyncua').setLevel('ERROR')
+        logging.getLogger('asyncio').setLevel('WARNING')
+        logging.getLogger('KafkaProducer').setLevel('WARNING')
+        if not self.terminated:
+            asyncio.run(self.run())
 
-    def run(self):
-        """
-            This functions sole purpose is to start the
-            programm as specified in the config.
-        :return:
-        """
-        self.info = "OPCUAConnector started"
-        self.logger.info("OPCUAConnector started")
-        if "sub" == self.config['mode']['mode']:
-            asyncio.run(self.query_subscription())
-        elif "pol" == self.config['mode']['mode']:
-            asyncio.run(self.query_pol())
-        while not self.terminated:
-            time.sleep(1)
-        self.logger.info("OPCUAConnector stopping")
-        self.info = "OPCUAConnector stopping"
+    def load_config(self, config_template: dict = None, source: str = 'file'):
+        """ Loads the config for the component, either from env variables
+        or from a file.
 
-    async def _checkConnection(self):
+        :param config_template: dict with all required fields for the
+        component to work.
+        :param source: source of the config, either file or env
+        :return: None
         """
-            This function is used to check the Connection to the OPC Server
-        :return:
+        if source != 'file':
+            config = self.get_config(
+                config_template,
+                source=source,
+                file_path=f'/config/{self.path_name}')
+        else:
+            config = self.wait_for_config_insertion()
+        self.config = config
+        try:
+            if self.config and all(key in self.config
+                                   for key in config_template.keys()):
+                if "username" in config['security'] and "password" in config[
+                    'security']:
+                    self.username = config['security']['username']
+                    self.password = config['security']['password']
+                self.check_time = config['check_time']
+                self.time_out = config['time_out']
+                if config['node_ids']:
+                    self.node_ids = config['node_ids']
+                self.host = config['opcua_host']
+                self.kafka_broker = config['kafka_broker']
+                self.producer = KafkaProducer(
+                    bootstrap_servers=[self.kafka_broker])
+                self.topic = config['sink_topic']
+                if config['discovery_config']:
+                    if 'to_ignore' in config['discovery_config'] \
+                            and 'node_type' in config['discovery_config']:
+                        self.to_ignore = config['discovery_config'][
+                            'to_ignore']
+                        self.node_type = config['discovery_config'][
+                            'node_type']
+                    else:
+                        self.logger.error('Missing key(s) in discovery config')
+                        print('Missing key(s) in discovery config', flush=True)
+                        self.terminated = True
+            else:
+                self.logger.error('Missing key(s) in config')
+                print('Missing key(s) in config', flush=True)
+                self.terminated = True
+        except Exception as error:
+            self.logger.error(f'Error: {error} in load_config')
+            self.terminated = True
+
+    async def run(self):
+        """ Main function of the opcua producer.
+
+        :return: None
+        """
+        try:
+            print('OPCUA-Producer starting...', flush=True)
+            while not self.terminated:
+                if not self.connected:
+                    await self._connect()
+                if not self.sub_nodes and self.connected:
+                    await self.prepare_nodes()
+                if self.config['mode'] == 'subscription':
+                    if not self.subscribed and self.connected:
+                        await self.subscribe_to_nodes()
+                elif self.config['mode'] == 'polling':
+                    await self.write_value()
+                await asyncio.sleep(self.check_time / 1000)
+                await self._check_connection()
+        except Exception as error:
+            self.logger.error(f'Error: {error} in run')
+            self.terminated = True
+        finally:
+            if self.connected:
+                await self.client.disconnect()
+                self.logger.debug('Disconnected from OPCUA-Server')
+            if self.producer.bootstrap_connected():
+                self.producer.close()
+                self.logger.debug('Closed Kafka Producer')
+            print('OPCUA-Producer stoppped', flush=True)
+
+    async def prepare_nodes(self):
+        """ Fetches Nodes from the client and registers them, if supported by
+        the server.
+
+        :return: None
+        """
+        print('Preparing nodes...', flush=True)
+        if self.node_ids:
+            for node_id in self.node_ids:
+                node = self.client.get_node(node_id)
+                try:
+                    await node.read_display_name()
+                except BadNodeIdUnknown:
+                    self.logger.warning(f'{str(node)} is invalid')
+                    continue
+
+                self.parent_id[node] = await node.get_parent()
+
+                if self.config['discovery']:
+                    await self.discovery(node)
+                else:
+                    self.sub_nodes.append(node)
+        else:
+            self.logger.warning(
+                'No NodeIds given, continue discovery from root node!')
+            await self.discovery(self.client.get_root_node())
+
+        try:
+            self.sub_nodes = await self.client.register_nodes(
+                self.sub_nodes)
+        except BadNotSupported:
+            self.logger.warning('Server does not support to register nodes, '
+                                'might result in poor performance')
+        print('Nodes prepared', flush=True)
+
+    async def _check_connection(self):
+        """ This function is used to check the Connection to the OPC Server
+
+        :return: None
         """
         try:
             node = self.client.get_root_node()
@@ -160,31 +237,22 @@ class OPCUAConnector:
         except AttributeError:
             self.connected = False
             self.subscribed = False
-        except Exception as error:
-            self.error = str(self.__class__) + ": " + str(error)
-            self.logger.error("Error: %s, in _checkConnection", error)
-            if self.connected:
-                await self.client.disconnect()
 
     async def _connect(self):
-        """
-            This function connects the Client to the OpcUaServer.
-            Either u sign in as an anonymous user or with username and password or via security_string.
-        :return:
-            None.
+        """ Connects the Client to the OpcUaServer.
+        Sign in as an anonymous user or with username and password.
+
+        :return: None
         """
         try:
-            self.client = Client(self.url, self.timeOut)
-            if "username" and "password" in self.config['security']:
+            print('Connecting to OPCUA-Server', flush=True)
+            self.client = Client(self.host, self.time_out)
+            if self.username and self.password:
                 self.client.set_user(self.username)
                 self.client.set_password(self.password)
-                await self.client.connect()
-                self.logger.debug("Logged in as user %s.", self.username)
-            else:
-                await self.client.connect()
-                self.logger.debug("Logged in as anonymous user.")
+            await self.client.connect()
+            self.logger.debug('Connected to OPCUA-Server')
             self.connected = True
-            await self.client.load_data_type_definitions()
         except ConnectionRefusedError:
             self.connected = False
             self.subscribed = False
@@ -197,285 +265,156 @@ class OPCUAConnector:
         except AttributeError:
             self.connected = False
             self.subscribed = False
-        except Exception as error:
-            self.error = str(self.__class__) + ": " + str(error)
-            self.logger.error("Error: %s, in _connect", error)
+        except BadIdentityTokenRejected as invalid_identity:
+            print('Invalid Credentials', flush=True)
+            raise ValueError('Invalid Credentials') from invalid_identity
 
-    async def query_pol(self):
-        """
-            This function is used to poll create Task Objects, which polls
-            data in given interval. It also starts the _connect function, which
-            establishes a connection to the OPC UA Server and initializes all
-            nodes given by the config.
-        :return:
-            None.
-        :exception:
-            This function raises a RuntimeException if there are no
-            nodeids given in the config, when not using the discovery.
-        """
-        try:
-            # Establish Connection
-            await self._connect()
-            if self.config['mode']['discovery'] == "False":
-                if self.nodeids:
-                    # Append all Nodes given via the config into a list
-                    nodes = []
-                    for nodeid in self.nodeids:
-                        nodes.append(self.client.get_node(nodeid))
-                    # Check if nodes already collected
-                    if self.interest_nodes:
-                        await self._write(nodes)
-                else:
-                    # Raise a RuntimeError, if no Nodes are given in the Config
-                    raise RuntimeError
-            elif self.config['mode']['discovery'] == "True":
-                # If there are Nodeids given in the Config, call the _browse function with the given Node, otherwise use the rootNode
-                if self.nodeids:
-                    for nodeid in self.nodeids:
-                        await self._browse(self.client.get_node(nodeid))
-                else:
-                    await self._browse(self.client.get_root_node())
-                self.logger.debug("NodeCount: %s", self.nodeCounter)
-                # Check if nodes already collected
-                if self.interest_nodes:
-                    await self._write(self.interest_nodes)
-            if self.terminated and self.connected:
-                await self.client.disconnect()
-        except RuntimeError as error:
-            self.error = str(self.__class__) + ": " + str(error)
-            self.logger.error("Error: No NodeIds given in non-discovery mode! %s", error)
-            if self.connected:
-                await self.client.disconnect()
-        except (KeyboardInterrupt, SystemExit):
-            if self.connected:
-                await self.client.disconnect()
-            self.terminated = True
-            self.status = "stop"
-            raise
-        except Exception as error:
-            self.error = str(self.__class__) + ": " + str(error)
-            self.logger.error("Error: %s, in query_pol", error)
-            if self.connected:
-                await self.client.disconnect()
+    async def subscribe_to_nodes(self):
+        """ Initializes a sub handler and subscribes to the given
+        nodes.
 
-    async def _write(self, nodes):
+        :return: None
         """
-            This function writes the value of the given node into the buffer,
-            in given interval(pol_time).
-        :param node: node
-            node to be written into the buffer.
-        :return:
-            None.
-        """
-        try:
-            while not self.terminated:
-                while self.status == "start":
-                    t = datetime.datetime.now().timestamp()
-                    await self._checkConnection()
-                    if not self.connected and not self.terminated:
-                        await self._connect()
-                    self.data = {
-                        'metadata': {
-                            'deviceID': ""
-                        },
-                        'data': {
+        if not self.sub:
+            self.sub = await self.client.create_subscription(
+                period=self.check_time, handler=SubHandler(self))
+        self.sub_handle = await self.sub.subscribe_data_change(self.sub_nodes)
+        self.logger.debug(f'Subscribed to {len(self.sub_nodes)} Nodes')
+        print(f'Subscribed to {len(self.sub_nodes)} Nodes', flush=True)
+        self.subscribed = True
 
-                        }
-                    }
-                    value = await self.client.read_values(nodes)
-                    timestamp = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")
-                    pairs = dict(zip(nodes, value))
-                    for pair in pairs:
-                        self.data['metadata']['deviceID'] = str(await pair.get_parent())
-                        self.data['data'][str(pair)] = []
-                        valueset = {'timestamp': timestamp,
-                                    'value': float(pairs[pair] if pairs[pair] is not None else 0)}
-                        self.data['data'][str(pair)].append(valueset)
-                    self.producer.send(
-                        self.topic,
-                        value=json.dumps(self.data).encode('utf-8'),
-                        key=json.dumps(self.deviceid).encode('utf-8'))\
-                        .add_callback(self.on_broker_delivery)
-                    self.producer.flush()
-                    t = datetime.datetime.now().timestamp() - t
-                    #self.data['metadata']['deviceID'] = str(await node.get_parent())
-                    # await self.isList(str(node), value)
-                    await asyncio.sleep(float(self.pol_time)-t)
-        except Exception as error:
-            self.error = str(self.__class__) + ": " + str(error)
-            self.logger.error("Error: %s, in _write", error)
-            if self.connected:
-                await self.client.disconnect()
+    async def write_value(self):
+        """ Writes the value of the given nodes to the kafka broker.
 
-    def on_broker_delivery(self, err, decoded_message, original_message):
-        if err is not None:
-            print(err)
-        self.logger.debug("Kafka broker received message: " + str(original_message))
+        :return: None
+        """
+        if not self.sub_nodes_id:
+            self.sub_nodes_id = [node.nodeid for node in self.sub_nodes]
+        values = await self.client.uaclient.read_attributes(
+            self.sub_nodes_id,
+            ua.AttributeIds.Value
+        )
+        node_value_pairs = dict(zip(self.sub_nodes, values))
 
-    async def query_subscription(self):
-        """
-            This function is used to subscribe to a certain set of
-            nodes given by the config. It first establishes a connection
-            with the _connect function and initializes all nodes to be
-            subscribed.
-        :return:
-            None.
-        :exception:
-            This function raises a RuntimeException if there are no
-            nodeids given in the config, when not using the discovery.
-        """
-        try:
-            await self._connect()
-            while not self.terminated:
-                if "False" == self.config['mode']['discovery'] and not self.subscribed:
-                    if self.nodeids:
-                        if not self.subscribed and self.connected and not self.interest_nodes:
-                            for nodeid in self.nodeids:
-                                self.interest_nodes.append(self.client.get_node(nodeid))
-                                self.dict[self.client.get_node(nodeid)] = await self.client.get_node(nodeid).get_parent()
-                    else:
-                        raise RuntimeError
-                elif "True" == self.config['mode']['discovery'] and not self.subscribed:
-                    if not self.interest_nodes and self.connected:
-                        if self.nodeids:
-                            for nodeid in self.nodeids:
-                                await self._browse(self.client.get_node(nodeid))
-                        else:
-                            await self._browse(self.client.get_root_node())
-                        self.logger.debug("NodeCount: %s", self.nodeCounter)
-                while self.status == "start":
-                    await self._checkConnection()
-                    if not self.connected and not self.terminated:
-                        await self._connect()
-                    if not self.subscribed:
-                        await self._subscribe(self.interest_nodes)
-                    if self.connected and self.subscribed:
-                        await asyncio.sleep(1)
-                if self.terminated:
-                    if self.connected:
-                        await self.client.disconnect()
-        except RuntimeError as error:
-            self.error = str(self.__class__) + ": " + str(error)
-            self.logger.error("Error: No NodeIds given, in non-discovery mode! %s", error)
-            if self.connected:
-                await self.client.disconnect()
-        except (KeyboardInterrupt, SystemExit):
-            if self.connected:
-                await self.client.disconnect()
-            self.terminated = True
-            self.status = "stop"
-            raise
-        except Exception as error:
-            self.error = str(self.__class__) + ": " + str(error)
-            self.logger.error("Error: %s, in query_subscription", error)
-            if self.connected:
-                await self.client.disconnect()
+        data = {
+            'data': {
 
-    async def _subscribe(self, nodes):
-        """
-            This function is used to create a subscription
-             and also to subscribe to a given set of nodes
-        :param nodes: a list containing nodes
-        :return:
-            None
-        """
-        try:
-            if not self.subscribed and self.connected:
-                if self.sub is None:
-                    self.sub = await self.client.create_subscription(period=self.subCheckTime, handler=SubHandler(self))
-                await self.sub.subscribe_data_change(nodes)
-                await self.sub
-                self.logger.debug("Added subscription to nodes %s", str(nodes))
-                self.subscribed = True
-        except Exception as error:
-            self.error = str(self.__class__) + ": " + str(error)
-            self.logger.error("Error: %s, in _subscribe", error)
-            if self.connected:
-                await self.client.disconnect()
+            },
+            'metadata': {
 
-    async def _browse(self, rootNode):
+            }
+        }
+        for node in node_value_pairs:
+            value_set = {
+                'timestamp': node_value_pairs[
+                    node].SourceTimestamp.strftime(
+                    "%Y-%m-%dT%H:%M:%S.%f"),
+                'value': node_value_pairs[node].Value.Value
+            }
+            data['data'][str(node)] = [value_set]
+        self.producer.send(
+            self.topic,
+            value=json.dumps(data).encode('UTF-8'),
+        ).add_callback(self.on_broker_delivery)
+        self.producer.flush()
+
+    def on_broker_delivery(self, original_message):
+        """ Callback of the kafka broker, if the message is successfully sent.
+
+        :param original_message: message to be sent.
+        :return: None
         """
-            This function is used to subscribe to the children nodes of
-            the given node.
-        :param rootNode: given node to iterate through all children nodes.
-        :return:
-            None
+        self.logger.debug(
+            "Kafka broker received message: " + str(original_message))
+
+    async def discovery(self, root_node: asyncua.Node):
+        """ Iterate through the children nodes of the given node and find
+        subscribable nodes, regarding the given data node_type.
+
+        :param root_node: Given node to iterate through all children nodes.
+        :return: None
         """
-        try:
-            if not self.terminated and self.connected:
-                browse = await rootNode.read_display_name()
-                nodeClass = await rootNode.read_node_class()
-                children = await rootNode.get_children()
-                reflist = await rootNode.get_references(direction=ua.BrowseDirection.Forward)
-                if rootNode == self.client.get_root_node():
-                    for node in children:
-                        await self._browse(node)
-                elif ua.NodeClass.Variable == nodeClass:
-                    if any(reflist[0].BrowseName.Name == dType for dType in self.type):
-                        attr = await rootNode.read_attributes([ua.AttributeIds.DataType])
-                        # self.logger.debug("Hier %s", attr[0].Value.Value.Identifier)
-                        if 0 < attr[0].Value.Value.Identifier < 12:
-                            # if ua.ValueRank.Scalar == await rootNode.read_value_rank():
-                            if await rootNode.get_user_access_level() >= await rootNode.get_access_level():
-                                self.interest_nodes.append(rootNode)
-                                self.dict[rootNode] = await rootNode.get_parent()
-                                #self.logger.debug("%s appended", browse.Text)
-                                self.nodeCounter += 1
-                    for node in children:
-                        await self._browse(node)
-                elif reflist[0].BrowseName.Name == "FolderType":
-                    if any(browse.Text == name for name in self.toIgnore):
-                        return
-                    elif "Views" == browse.Text:
-                        return
-                    elif "Types" == browse.Text:
-                        return
-                    elif "AccessLevels" == browse.Text:
-                        return
-                    for node in children:
-                        await self._browse(node)
-                elif reflist[0].BrowseName.Name == "BaseObjectType":
-                    if any(browse.Text == name for name in self.toIgnore):
-                        return
-                    if "Server" == browse.Text:
-                        return
-                    for node in children:
-                        await self._browse(node)
-        except Exception as error:
-            self.error = str(self.__class__) + ": " + str(error)
-            self.logger.error("Node: %s", rootNode)
-            self.logger.error("Error: %s, in browse", error)
-            if self.connected:
-                await self.client.disconnect()
+        if not self.terminated and self.connected:
+            browse = await root_node.read_display_name()
+            if any(browse.Text == variant.name for variant in
+                   ua.uatypes.VariantType):
+                return
+            node_class = await root_node.read_node_class()
+            children = await root_node.get_children()
+            ref_list = await root_node.get_references(
+                direction=ua.BrowseDirection.Forward)
+            if root_node == self.client.get_root_node():
+                for node in children:
+                    await self.discovery(node)
+            elif ua.NodeClass.Variable == node_class:
+                if any(ref_list[0].BrowseName.Name == dType for dType in
+                       self.node_type):
+                    attr = await root_node.read_attributes(
+                        [ua.AttributeIds.DataType])
+                    if 0 < attr[0].Value.Value.Identifier < 12:
+                        if await root_node.get_user_access_level() >= \
+                                await root_node.get_access_level():
+                            node_name = await root_node.read_display_name()
+                            self.logger.debug(f'Node discovered: '
+                                              f'{str(node_name)}')
+                            self.sub_nodes.append(root_node)
+                            self.parent_id[root_node] = await root_node \
+                                .get_parent()
+                for node in children:
+                    await self.discovery(node)
+            elif ref_list[0].BrowseName.Name == "FolderType":
+                if any(browse.Text == name for name in self.to_ignore):
+                    return
+                elif "Views" == browse.Text:
+                    return
+                elif "Types" == browse.Text:
+                    return
+                elif "AccessLevels" == browse.Text:
+                    return
+                for node in children:
+                    await self.discovery(node)
+            elif ref_list[0].BrowseName.Name == "BaseObjectType":
+                if any(browse.Text == name for name in self.to_ignore):
+                    return
+                if "Server" == browse.Text:
+                    return
+                for node in children:
+                    await self.discovery(node)
 
 
-class SubHandler(object):
+class SubHandler():
     """
     This class handles the subscribed nodes.
     """
 
-    def __init__(self, opcuaconnector: OPCUAConnector):
-        self.connector = opcuaconnector
-        self.producer = opcuaconnector.producer
-        self.topic = opcuaconnector.topic
+    def __init__(self, producer: OPCUAProducer):
+        """ Constructor of the Subscription handler
 
-    def datachange_notification(self, node, val, data):
+        :param producer: instance of the opcua producer
         """
-            This function handles the datachanges events of the subscribed nodes,
-            it passes the node and the value to a function, which writes the data
-            into the buffer.
+        self.opcua_producer = producer
+        self.producer = producer.producer
+        self.topic = producer.topic
+
+    def datachange_notification(self, node: Node, val, data):
+        """ This function handles the datachanges events of the subscribed
+            nodes, it passes the node and the value to a function,
+            which writes the data into the buffer.
+
         :param node: subscribed node
         :param val: value of the node
         :param data: data of the node
         :return:
         """
         try:
-            self.connector.logger.debug("Python: New data change event on node %s, with val: %s and data %s", node, val,
-                                        str(data))
+            self.opcua_producer.logger.debug(
+                f'Python: New data change event on node {node}, with val '
+                f'{val} and {str(data)}'
+            )
             self.isList(node, val, data.monitored_item.Value.SourceTimestamp)
         except Exception as error:
-            self.connector.error = str(self.__class__) + ": " + str(error)
-            self.connector.logger.error("Error: %s, in SubHandler datachange_notification", error)
+            self.opcua_producer.logger.error(
+                f"Error: {error}, in SubHandler datachange_notification")
 
     def isList(self, node, val, ts):
         """
@@ -491,7 +430,7 @@ class SubHandler(object):
             for v in val:
                 self.isList((node + " " + str(val.index(v))), v, ts)
         else:
-            self.connector.data = {
+            self.opcua_producer.data = {
                 "metadata": {
                     "deviceID": ""
                 },
@@ -499,37 +438,29 @@ class SubHandler(object):
 
                 }
             }
-            self.connector.data['metadata']['deviceID'] = str(self.connector.dict[node])
-            self.connector.data['data'][str(node)] = []
-            valueset = {'timestamp': ts.strftime("%Y-%m-%dT%H:%M:%S.%f"),
-                        'value': float(val)}
-            self.connector.data['data'][str(node)].append(valueset)
+            self.opcua_producer.data['metadata']['deviceID'] = str(
+                self.opcua_producer.parent_id[node])
+            self.opcua_producer.data['data'][str(node)] = []
+            value_set = {'timestamp': ts.strftime("%Y-%m-%dT%H:%M:%S.%f"),
+                         'value': float(val)}
+            self.opcua_producer.data['data'][str(node)].append(value_set)
             self.producer.send(
                 self.topic,
-                value=json.dumps(self.connector.data).encode('utf-8'),
-                key=json.dumps(self.connector.deviceid.encode('utf-8')))\
+                value=json.dumps(self.opcua_producer.data).encode('utf-8')) \
                 .add_callback(self.on_broker_delivery)
             self.producer.flush()
 
-    def on_broker_delivery(self, err, decoded_message, original_message):
-        if err is not None:
-            print(err)
-        self.connector.logger.debug("Broker received message: " + str(original_message))
+    def on_broker_delivery(self, original_message):
+        self.opcua_producer.logger.debug(
+            f"Broker received message: {str(original_message)}")
 
     def status_change_notification(self, event):
-        try:
-            self.connector.logger.debug("Python: New Status event change %s", event)
-        except Exception as error:
-            self.connector.error = str(self.__class__) + ": " + str(error)
-            self.connector.logger.error("Error: %s, in SubHandler status_change_notification", error)
+        self.opcua_producer.logger.debug(f"Python: New Status event change "
+                                         f"{event}")
 
     def event_notification(self, event):
-        try:
-            self.connector.logger.debug("Python: New event %s", event)
-        except Exception as error:
-            self.connector.error = str(self.__class__) + ": " + str(error)
+        self.opcua_producer.logger.debug(f"Python: New event {event}")
 
 
 if __name__ == '__main__':
-    connector = OPCUAConnector()
-
+    connector = OPCUAProducer()

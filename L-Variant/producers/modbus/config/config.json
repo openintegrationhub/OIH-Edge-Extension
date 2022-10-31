@@ -1,0 +1,25 @@
+{
+	"name": "opcua_producer",
+	"kafka_broker": "localhost:19092",
+    "slaves": [
+        {
+            "host": "host.docker.internal",
+            "port": 502,
+            "topic": "Temperature",
+            "method": "read_input",
+            "start_address": 0,
+            "count": 1,
+            "unit": 1
+        },
+        {
+            "host": "host.docker.internal",
+            "port": 502,
+            "topic": "Pressure",
+            "method": "read_holding",
+            "start_address": 0,
+            "count": 1,
+            "unit": 1
+        }
+    ],
+    "timeout_attempts": 30
+}

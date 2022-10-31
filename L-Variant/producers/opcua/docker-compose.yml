@@ -1,9 +1,13 @@
 version: "3"
 services:
   opcua:
+    container_name: ${CONNAME}
     build: .
+    environment:
+        path_name: "${PATHNAME}"
     network_mode:
       host
     volumes:
       - ./logs/:/opcua/logs/
       - ./config/:/opcua/config/
+      - ./../../component_base_class/component_base_class.py:/opcua/component_base_class/component_base_class.py

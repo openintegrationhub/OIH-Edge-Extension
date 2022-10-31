@@ -1,0 +1,27 @@
+{
+	"name": "opcua_producer",
+	"kafka_broker": "localhost:9092",
+	"sink_topic": "kafka_source_component_test",
+	"opcua_host": "opc.tcp://host.docker.internal:53530/OPCUA/SimulationServer",
+	"security": {
+		"password": "user",
+		"username": "user"
+	},
+	"time_out": 200,
+	"mode": "subscription",
+	"node_ids": [],
+	"check_time": 2000,
+	"discovery": true,
+	"discovery_config": {
+		"to_ignore": [
+			"Views",
+			"Types",
+			"Server",
+			"MyObjects",
+			"StaticData"
+		],
+		"node_type": [
+			"BaseDataVariableType"
+		]
+	}
+}

@@ -6,9 +6,9 @@ services:
         hostname: zookeeper
         container_name: zookeeper
         ports:
-          - "2181:2181"
+          - "${ZOOKEEPER_PORT:-2181}:${ZOOKEEPER_PORT:-2181}"
         environment:
-          ZOOKEEPER_CLIENT_PORT: 2181
+          ZOOKEEPER_CLIENT_PORT: ${ZOOKEEPER_PORT:-2181}
           ZOOKEEPER_TICK_TIME: 2000
 
     broker:         
@@ -18,22 +18,23 @@ services:
         depends_on:
             - zookeeper
         ports:
-            - "29092:29092"
-            - "9092:9092"
-            - "9101:9101"
-            - "19092:19092"
+            - "${BROKER_PORT_3:-29092}:${BROKER_PORT_3:-29092}"
+            - "${BROKER_PORT_0:-9092}:${BROKER_PORT_0:-9092}"
+            - "${BROKER_PORT_1:-9101}:${BROKER_PORT_1:-9101}"
+            - "${BROKER_PORT_2:-19092}:${BROKER_PORT_2:-19092}"
         environment:
             KAFKA_BROKER_ID: 1
-            KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+            KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:${ZOOKEEPER_PORT:-2181}'
             KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONNECTIONS_FROM_HOST:PLAINTEXT,FAUST:PLAINTEXT
-            KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:29092,CONNECTIONS_FROM_HOST://localhost:9092
+            KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:${BROKER_PORT_3:-29092},CONNECTIONS_FROM_HOST://localhost:${BROKER_PORT_0:-9092},FAUST://localhost:${BROKER_PORT_2:-19092}
             KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
             KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
             KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
             KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
-            KAFKA_JMX_PORT: 9101
+            KAFKA_JMX_PORT: ${BROKER_PORT_1:-9101}
             KAFKA_JMX_HOSTNAME: localhost
-            TOPIC_AUTO_CREATE: TRUE
+            TOPIC_AUTO_CREATE: "true"
+            KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
 
     kafka-ui:
         image: provectuslabs/kafka-ui
@@ -43,10 +44,9 @@ services:
           - broker
           - zookeeper
         ports:
-          - 8081:8080
+          - '${KAFKA_UI_PORT:-8080}:${KAFKA_UI_PORT:-8080}'
         restart: always
         environment:
           KAFKA_CLUSTERS_0_NAME: Kafka-Cluster
-          KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: 'broker:29092'
-          KAFKA_CLUSTERS_0_ZOOKEEPER: 'zookeeper:2181'   
-
+          KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: 'broker:${BROKER_PORT_3:-29092}'
+          KAFKA_CLUSTERS_0_ZOOKEEPER: 'zookeeper:${ZOOKEEPER_PORT:-2181}'

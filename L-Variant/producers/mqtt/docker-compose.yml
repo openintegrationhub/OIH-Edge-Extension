@@ -2,8 +2,12 @@ version: "3"
 services:
   mqtt:
     build: .
+    container_name: ${CONNAME}
     network_mode:
       host
     volumes:
       - ./logs/:/mqtt/logs/
       - ./config/:/mqtt/config/
+      - ./../../component_base_class/component_base_class.py:/mqtt/component_base_class/component_base_class.py
+    environment:
+        path_name: ${PATHNAME}

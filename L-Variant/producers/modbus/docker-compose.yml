@@ -1,0 +1,13 @@
+version: "3.8"
+services:
+  modbus:
+    build: .
+    container_name: ${CONNAME}
+    environment:
+        path_name: ${PATHNAME}
+    network_mode:
+      host
+    volumes:
+      - ./logs/:/modbus/logs/
+      - ./config/:/modbus/config/
+      - ./../../component_base_class/component_base_class.py:/modbus/component_base_class/component_base_class.py
